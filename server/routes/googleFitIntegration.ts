@@ -26,6 +26,7 @@ router.get("/api/google-fit/auth-url", (req: Request, res: Response) => {
       access_type: "offline",
       scope: scopes,
       prompt: "consent",
+      state: JSON.stringify({ userId: (req as any).user?.id || "anonymous" }),
     });
 
     res.json({ authUrl });
@@ -33,23 +34,32 @@ router.get("/api/google-fit/auth-url", (req: Request, res: Response) => {
     console.error("Error generating auth URL:", error);
     res.status(500).json({ error: "Failed to generate auth URL" });
   }
-});
+})
 
 /**
  * Google Fit OAuth 回调处理
  */
 router.get("/api/google-fit/callback", async (req: Request, res: Response) => {
   try {
-    const { code } = req.query;
+    const { code, state } = req.query;
 
     if (!code) {
-      return res.status(400).json({ error: "Missing authorization code" });
+      return res.redirect("/?google_fit_error=missing_code");
     }
 
-    // 获取用户 ID（从 session 或其他方式）
-    const userId = (req as any).user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: "User not authenticated" });
+    // 获取用户 ID（从 state 参数或 session）
+    let userId = (req as any).user?.id;
+    if (!userId && state) {
+      try {
+        const stateData = JSON.parse(state as string);
+        userId = stateData.userId;
+      } catch (e) {
+        console.error("Failed to parse state:", e);
+      }
+    }
+
+    if (!userId || userId === "anonymous") {
+      return res.redirect("/?google_fit_error=not_authenticated");
     }
 
     // 交换授权码获取访问令牌

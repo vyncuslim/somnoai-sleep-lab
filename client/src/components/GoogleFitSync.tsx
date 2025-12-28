@@ -33,18 +33,18 @@ export function GoogleFitSync({ userId, onSync }: GoogleFitSyncProps) {
     }
   };
 
-  const handleConnect = () => {
-    // 重定向到 Google OAuth 权限请求页面
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    const redirectUri = `${window.location.origin}/api/oauth/google/callback`;
-    const scope = [
-      "https://www.googleapis.com/auth/fitness.sleep.read",
-      "https://www.googleapis.com/auth/fitness.heart_rate.read",
-    ].join(" ");
-
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline`;
-
-    window.location.href = authUrl;
+  const handleConnect = async () => {
+    try {
+      const response = await fetch("/api/google-fit/auth-url");
+      if (!response.ok) {
+        throw new Error("Failed to get auth URL");
+      }
+      const data = await response.json();
+      window.location.href = data.authUrl;
+    } catch (error) {
+      console.error("Failed to connect Google Fit:", error);
+      setSyncStatus("error");
+    }
   };
 
   const handleSync = async () => {
