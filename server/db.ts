@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, and, desc, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, sleepRecords, heartRateData, googleFitIntegrations, alarms, userPreferences, notifications } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -90,3 +90,187 @@ export async function getUserByOpenId(openId: string) {
 }
 
 // TODO: add feature queries here as your schema grows.
+
+// Sleep Records queries
+export async function getSleepRecord(userId: number, recordDate: Date) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(sleepRecords).where(
+    and(eq(sleepRecords.userId, userId), eq(sleepRecords.recordDate, recordDate))
+  ).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getSleepRecordsByDateRange(userId: number, startDate: Date, endDate: Date) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(sleepRecords).where(
+    and(
+      eq(sleepRecords.userId, userId),
+      gte(sleepRecords.recordDate, startDate),
+      lte(sleepRecords.recordDate, endDate)
+    )
+  ).orderBy(desc(sleepRecords.recordDate));
+}
+
+export async function createSleepRecord(data: any) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.insert(sleepRecords).values(data);
+  return data;
+}
+
+export async function updateSleepRecord(id: number, data: any) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.update(sleepRecords).set(data).where(eq(sleepRecords.id, id));
+}
+
+// Heart Rate Data queries
+export async function getHeartRateData(userId: number, recordDate: Date) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(heartRateData).where(
+    and(eq(heartRateData.userId, userId), eq(heartRateData.recordDate, recordDate))
+  ).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getHeartRateDataByDateRange(userId: number, startDate: Date, endDate: Date) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(heartRateData).where(
+    and(
+      eq(heartRateData.userId, userId),
+      gte(heartRateData.recordDate, startDate),
+      lte(heartRateData.recordDate, endDate)
+    )
+  ).orderBy(desc(heartRateData.recordDate));
+}
+
+export async function createHeartRateData(data: any) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.insert(heartRateData).values(data);
+  return data;
+}
+
+export async function updateHeartRateData(id: number, data: any) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.update(heartRateData).set(data).where(eq(heartRateData.id, id));
+}
+
+// Google Fit Integration queries
+export async function getGoogleFitIntegration(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(googleFitIntegrations).where(
+    eq(googleFitIntegrations.userId, userId)
+  ).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createGoogleFitIntegration(data: any) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.insert(googleFitIntegrations).values(data);
+  return data;
+}
+
+export async function updateGoogleFitIntegration(userId: number, data: any) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.update(googleFitIntegrations).set(data).where(eq(googleFitIntegrations.userId, userId));
+}
+
+// Alarms queries
+export async function getUserAlarms(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(alarms).where(eq(alarms.userId, userId));
+}
+
+export async function createAlarm(data: any) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.insert(alarms).values(data);
+  return data;
+}
+
+export async function updateAlarm(id: number, data: any) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.update(alarms).set(data).where(eq(alarms.id, id));
+}
+
+export async function deleteAlarm(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.delete(alarms).where(eq(alarms.id, id));
+}
+
+// User Preferences queries
+export async function getUserPreferences(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(userPreferences).where(
+    eq(userPreferences.userId, userId)
+  ).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createUserPreferences(data: any) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.insert(userPreferences).values(data);
+  return data;
+}
+
+export async function updateUserPreferences(userId: number, data: any) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.update(userPreferences).set(data).where(eq(userPreferences.userId, userId));
+}
+
+// Notifications queries
+export async function getUserNotifications(userId: number, limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(notifications).where(
+    eq(notifications.userId, userId)
+  ).orderBy(desc(notifications.createdAt)).limit(limit);
+}
+
+export async function getUnreadNotifications(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(notifications).where(
+    and(eq(notifications.userId, userId), eq(notifications.isRead, 0))
+  ).orderBy(desc(notifications.createdAt));
+}
+
+export async function createNotification(data: any) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.insert(notifications).values(data);
+  return data;
+}
+
+export async function markNotificationAsRead(notificationId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.update(notifications).set({ isRead: 1 }).where(eq(notifications.id, notificationId));
+}
+
+export async function markAllNotificationsAsRead(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.update(notifications).set({ isRead: 1 }).where(eq(notifications.userId, userId));
+}
+
+export async function deleteNotification(notificationId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.delete(notifications).where(eq(notifications.id, notificationId));
+}
