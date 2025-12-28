@@ -16,6 +16,7 @@ import ManualEntry from "./pages/ManualEntry";
 import TrendAnalysis from "./pages/TrendAnalysis";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import SleepGoals from "./pages/SleepGoals";
 
 import { useAuth } from "@/_core/hooks/useAuth";
 
@@ -44,6 +45,7 @@ function Router() {
       <Route path={"/manual-entry"} component={ManualEntry} />
       <Route path={"/trend-analysis"} component={TrendAnalysis} />
       <Route path={"/settings"} component={Settings} />
+      <Route path={"/sleep-goals"} component={SleepGoals} />
       <Route path={"/notifications"} component={Notifications} />
       <Route path={"/privacy"} component={Privacy} />
       <Route path={"/privacypolicy"} component={PrivacyPolicy} />

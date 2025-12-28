@@ -1,6 +1,6 @@
 import { eq, and, desc, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, sleepRecords, heartRateData, googleFitIntegrations, alarms, userPreferences, notifications } from "../drizzle/schema";
+import { InsertUser, users, sleepRecords, heartRateData, googleFitIntegrations, alarms, userPreferences, notifications, aiChatHistory, sleepGoals } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -273,4 +273,49 @@ export async function deleteNotification(notificationId: number) {
   const db = await getDb();
   if (!db) return undefined;
   await db.delete(notifications).where(eq(notifications.id, notificationId));
+}
+
+
+// AI Chat History queries
+export async function saveAIChatMessage(userId: number, role: string, message: string, context?: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.insert(aiChatHistory).values({
+    userId,
+    role: role as "user" | "assistant",
+    message,
+    context,
+  });
+}
+
+export async function getAIChatHistory(userId: number, limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(aiChatHistory).where(
+    eq(aiChatHistory.userId, userId)
+  ).orderBy(desc(aiChatHistory.createdAt)).limit(limit);
+}
+
+// Sleep Goals queries
+export async function getUserSleepGoal(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(sleepGoals).where(
+    eq(sleepGoals.userId, userId)
+  ).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createSleepGoal(data: any) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.insert(sleepGoals).values(data);
+  return data;
+}
+
+export async function updateSleepGoal(userId: number, data: any) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.update(sleepGoals).set(data).where(eq(sleepGoals.userId, userId));
+  return data;
 }

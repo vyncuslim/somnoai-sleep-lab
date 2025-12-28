@@ -145,3 +145,36 @@ export const notifications = mysqlTable("notifications", {
 
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
+
+/**
+ * AI Chat History - stores conversations between user and AI assistant
+ */
+export const aiChatHistory = mysqlTable("ai_chat_history", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  role: mysqlEnum("role", ["user", "assistant"]).notNull(),
+  message: text("message").notNull(),
+  context: text("context"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AIChatHistory = typeof aiChatHistory.$inferSelect;
+export type InsertAIChatHistory = typeof aiChatHistory.$inferInsert;
+
+/**
+ * Sleep Goals - stores user sleep targets and goals
+ */
+export const sleepGoals = mysqlTable("sleep_goals", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  targetSleepDuration: int("targetSleepDuration").default(480).notNull(),
+  targetDeepSleepPercentage: decimal("targetDeepSleepPercentage", { precision: 5, scale: 2 }).default("15.00"),
+  targetRemPercentage: decimal("targetRemPercentage", { precision: 5, scale: 2 }).default("20.00"),
+  targetSleepEfficiency: decimal("targetSleepEfficiency", { precision: 5, scale: 2 }).default("85.00"),
+  notifyWhenMissed: int("notifyWhenMissed").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SleepGoal = typeof sleepGoals.$inferSelect;
+export type InsertSleepGoal = typeof sleepGoals.$inferInsert;

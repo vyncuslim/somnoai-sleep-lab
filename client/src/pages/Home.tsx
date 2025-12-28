@@ -109,6 +109,12 @@ export default function Home() {
                 日历
               </Button>
             </Link>
+            <Link href="/sleep-goals">
+              <Button variant="ghost" className="text-cyan-400 hover:bg-cyan-400/10">
+                <TrendingUp className="w-5 h-5 mr-2" />
+                目标
+              </Button>
+            </Link>
             <Link href="/settings">
               <Button variant="ghost" className="text-cyan-400 hover:bg-cyan-400/10">
                 <Settings className="w-5 h-5 mr-2" />

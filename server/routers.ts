@@ -266,6 +266,60 @@ Please provide professional advice based on the data and user question.`;
         });
       }),
   }),
+
+  // AI Chat History router
+  chatHistory: router({
+    save: protectedProcedure
+      .input(z.object({
+        role: z.enum(["user", "assistant"]),
+        message: z.string(),
+        context: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return await db.saveAIChatMessage(ctx.user.id, input.role, input.message, input.context);
+      }),
+    getHistory: protectedProcedure
+      .input(z.object({ limit: z.number().default(50) }).optional())
+      .query(async ({ ctx, input }) => {
+        return await db.getAIChatHistory(ctx.user.id, input?.limit || 50);
+      }),
+  }),
+
+  // Sleep Goals router
+  sleepGoals: router({
+    get: protectedProcedure.query(async ({ ctx }) => {
+      return await db.getUserSleepGoal(ctx.user.id);
+    }),
+    create: protectedProcedure
+      .input(z.object({
+        targetSleepDuration: z.number().optional(),
+        targetDeepSleepPercentage: z.number().optional(),
+        targetRemPercentage: z.number().optional(),
+        targetSleepEfficiency: z.number().optional(),
+        notifyWhenMissed: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const existingGoal = await db.getUserSleepGoal(ctx.user.id);
+        if (existingGoal) {
+          return await db.updateSleepGoal(ctx.user.id, input);
+        }
+        return await db.createSleepGoal({
+          userId: ctx.user.id,
+          ...input,
+        });
+      }),
+    update: protectedProcedure
+      .input(z.object({
+        targetSleepDuration: z.number().optional(),
+        targetDeepSleepPercentage: z.number().optional(),
+        targetRemPercentage: z.number().optional(),
+        targetSleepEfficiency: z.number().optional(),
+        notifyWhenMissed: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return await db.updateSleepGoal(ctx.user.id, input);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

@@ -34,6 +34,10 @@ export default function AIAssistant() {
   // Query today's sleep data
   const { data: todaySleep } = trpc.sleep.getToday.useQuery();
   const { data: todayHeartRate } = trpc.heartRate.getToday.useQuery();
+  
+  // Query chat history
+  const { data: chatHistory } = trpc.chatHistory.getHistory.useQuery();
+  const saveChatMutation = trpc.chatHistory.save.useMutation();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -104,6 +108,14 @@ export default function AIAssistant() {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+      
+      // Save to chat history
+      try {
+        await saveChatMutation.mutateAsync({ role: "user", message: inputValue, context });
+        await saveChatMutation.mutateAsync({ role: "assistant", message: data.response });
+      } catch (error) {
+        console.error("Failed to save chat history:", error);
+      }
     } catch (error) {
       console.error("Chat error:", error);
       toast.error("获取 AI 响应失败，请检查 API Key");
