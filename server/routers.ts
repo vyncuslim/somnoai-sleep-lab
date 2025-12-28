@@ -64,7 +64,25 @@ export const appRouter = router({
     getToday: protectedProcedure.query(async ({ ctx }) => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      return await db.getSleepRecord(ctx.user.id, today);
+      const record = await db.getSleepRecord(ctx.user.id, today);
+      if (!record) {
+        return {
+          id: 0,
+          userId: ctx.user.id,
+          recordDate: today,
+          sleepScore: 0,
+          totalDuration: 0,
+          deepSleepDuration: 0,
+          remDuration: 0,
+          lightSleepDuration: 0,
+          awakeDuration: 0,
+          sleepEfficiency: 0,
+          source: "manual",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+      }
+      return record;
     }),
     getByDateRange: protectedProcedure
       .input(z.object({
@@ -104,7 +122,22 @@ export const appRouter = router({
     getToday: protectedProcedure.query(async ({ ctx }) => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      return await db.getHeartRateData(ctx.user.id, today);
+      const record = await db.getHeartRateData(ctx.user.id, today);
+      if (!record) {
+        return {
+          id: 0,
+          userId: ctx.user.id,
+          recordDate: today,
+          averageHeartRate: 0,
+          minHeartRate: 0,
+          maxHeartRate: 0,
+          restingHeartRate: 0,
+          source: "manual",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+      }
+      return record;
     }),
     getByDateRange: protectedProcedure
       .input(z.object({
