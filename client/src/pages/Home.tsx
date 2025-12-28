@@ -410,6 +410,20 @@ export default function Home() {
             </div>
           </div>
         </Card>
+
+        {/* Footer with Privacy Policy and Terms */}
+        <div className="mt-12 pt-8 border-t border-white/10 text-center text-sm text-gray-400 space-y-2">
+          <p>2025 SomnoAI Digital Sleep Lab. All rights reserved.</p>
+          <div className="flex justify-center gap-4">
+            <Link href="/privacypolicy">
+              <span className="text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer">隐私权政策</span>
+            </Link>
+            <span>|</span>
+            <Link href="/termsofservice">
+              <span className="text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer">服务条款</span>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -4,17 +4,40 @@ import * as db from "../db";
 
 const router = Router();
 
-const oauth2Client = new google.auth.OAuth2(
+// 获取应用的正确 URL
+const getRedirectUri = () => {
+  // 在生产环境中使用应用的实际 URL
+  if (process.env.NODE_ENV === 'production') {
+    // 从请求中动态获取主机名
+    return 'https://somnoai-lab-bvvlgs8k.manus.space/api/google-fit/callback';
+  }
+  return 'http://localhost:3000/api/google-fit/callback';
+};
+
+let oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  `${process.env.VITE_FRONTEND_FORGE_API_URL || "http://localhost:3000"}/api/google-fit/callback`
+  getRedirectUri()
 );
+
+// 在每个请求时更新重定向 URI
+const updateRedirectUri = (req: Request) => {
+  const host = req.get('host');
+  const protocol = req.protocol || 'https';
+  const redirectUri = `${protocol}://${host}/api/google-fit/callback`;
+  oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    redirectUri
+  );
+};
 
 /**
  * 获取 Google Fit 授权 URL
  */
 router.get("/api/google-fit/auth-url", (req: Request, res: Response) => {
   try {
+    updateRedirectUri(req);
     const scopes = [
       "https://www.googleapis.com/auth/fitness.sleep.read",
       "https://www.googleapis.com/auth/fitness.heart_rate.read",
@@ -41,6 +64,7 @@ router.get("/api/google-fit/auth-url", (req: Request, res: Response) => {
  */
 router.get("/api/google-fit/callback", async (req: Request, res: Response) => {
   try {
+    updateRedirectUri(req);
     const { code, state } = req.query;
 
     if (!code) {
