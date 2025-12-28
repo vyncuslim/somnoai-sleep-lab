@@ -3,8 +3,8 @@ import { jwtDecode } from "jwt-decode";
 import * as db from "../db";
 import { COOKIE_NAME } from "../../shared/const";
 import { getSessionCookieOptions } from "../_core/cookies";
-import { sign } from "jose";
 import { ENV } from "../_core/env";
+import crypto from "crypto";
 
 const router = Router();
 
@@ -74,27 +74,22 @@ router.post("/api/auth/google-signin", async (req: Request, res: Response) => {
       return res.status(500).json({ error: "Failed to create user" });
     }
 
-    // 创建会话 JWT
-    const secret = new TextEncoder().encode(ENV.jwtSecret);
-    const sessionToken = await sign(
-      {
-        userId: user.id,
-        openId: user.openId,
-        email: user.email,
-        name: user.name,
-      },
-      secret,
-      {
-        algorithm: "HS256",
-        expiresIn: "7d",
-      }
-    );
+    // 创建会话 token
+    const tokenData = {
+      userId: user.id,
+      openId: user.openId,
+      email: user.email,
+      name: user.name,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+    };
+    const sessionToken = Buffer.from(JSON.stringify(tokenData)).toString("base64");
 
     // 设置 cookie
     const cookieOptions = getSessionCookieOptions(req);
     res.cookie(COOKIE_NAME, sessionToken, {
       ...cookieOptions,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.json({

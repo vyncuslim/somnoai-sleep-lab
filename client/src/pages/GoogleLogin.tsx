@@ -100,49 +100,42 @@ export default function GoogleLogin() {
   const handleConnectGoogleFit = async () => {
     setIsLoading(true);
     try {
-      // 获取 Google Fit 授权 URL
-      const response = await fetch("/api/google-fit/auth-url");
-      if (!response.ok) {
-        throw new Error("Failed to get auth URL");
-      }
-
-      const data = await response.json();
-      // 重定向到 Google Fit 授权页面
-      window.location.href = data.authUrl;
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "312904526470-84ra3lld33sci0kvhset8523b0hdul1c.apps.googleusercontent.com";
+      const redirectUri = `${window.location.origin}/api/auth/google-fit-callback`;
+      const scope = "https://www.googleapis.com/auth/fitness.sleep.read https://www.googleapis.com/auth/fitness.heart_rate.read";
+      
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline`;
+      
+      window.location.href = authUrl;
     } catch (error) {
       console.error("Error connecting Google Fit:", error);
       toast.error("连接 Google Fit 失败");
+    } finally {
       setIsLoading(false);
     }
   };
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      toast.error("请输入邮箱和密码");
+      return;
+    }
+
     setIsLoading(true);
-
     try {
-      if (!email || !password) {
-        toast.error("请填写邮箱和密码");
-        setIsLoading(false);
-        return;
-      }
-
-      if (!isLogin && password !== confirmPassword) {
-        toast.error("两次输入的密码不一致");
-        setIsLoading(false);
-        return;
-      }
-
       const endpoint = isLogin ? "/api/auth/email-login" : "/api/auth/email-signup";
+      const body = isLogin 
+        ? { email, password }
+        : { email, password, confirmPassword };
+
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (response.ok) {
@@ -246,7 +239,7 @@ export default function GoogleLogin() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all"
+                  className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all"
                   disabled={isLoading}
                 />
               </div>
@@ -264,7 +257,7 @@ export default function GoogleLogin() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all"
+                  className="w-full pl-10 pr-10 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all"
                   disabled={isLoading}
                 />
                 <button
@@ -282,7 +275,7 @@ export default function GoogleLogin() {
               </div>
             </div>
 
-            {/* Confirm Password (Register Only) */}
+            {/* Confirm Password Input (Register Only) */}
             {!isLogin && (
               <div>
                 <label className="text-gray-300 text-sm font-semibold mb-2 block">
@@ -295,94 +288,43 @@ export default function GoogleLogin() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all"
+                    className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all"
                     disabled={isLoading}
                   />
                 </div>
               </div>
             )}
 
-            {/* Remember Me / Forgot Password */}
-            {isLogin && (
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 text-gray-300 text-sm cursor-pointer hover:text-gray-200 transition-colors">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 rounded bg-white/10 border border-white/20 cursor-pointer"
-                    disabled={isLoading}
-                  />
-                  记住我
-                </label>
-                <a
-                  href="#"
-                  className="text-cyan-400 hover:text-cyan-300 text-sm transition-colors"
-                >
-                  忘记密码？
-                </a>
-              </div>
-            )}
-
             {/* Submit Button */}
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-6 py-3 px-4 bg-gradient-to-r from-cyan-400 to-blue-500 text-white rounded-lg font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full mt-6 bg-gradient-to-r from-cyan-400 to-blue-500 text-white hover:shadow-lg hover:shadow-cyan-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading && <Loader2 className="w-5 h-5 animate-spin" />}
-              {isLoading ? "处理中..." : isLogin ? "登录" : "注册"}
-            </button>
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  {isLogin ? "登录中..." : "注册中..."}
+                </>
+              ) : (
+                isLogin ? "登录" : "注册"
+              )}
+            </Button>
           </form>
 
-          {/* Toggle Login/Register */}
-          <p className="text-gray-400 text-xs text-center mt-6">
-            {isLogin ? "没有账户？" : "已有账户？"}
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-cyan-400 hover:text-cyan-300 ml-1 font-semibold transition-colors"
-              disabled={isLoading}
-            >
-              {isLogin ? "立即注册" : "返回登录"}
-            </button>
-          </p>
-
-          {/* Terms & Privacy */}
-          <p className="text-gray-500 text-xs text-center mt-4 leading-relaxed">
-            使用此应用即表示您同意我们的
-            <a
-              href="/termsofservice"
-              className="text-cyan-400 hover:text-cyan-300 ml-1 transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              服务条款
-            </a>
-            和
-            <a
-              href="/privacypolicy"
-              className="text-cyan-400 hover:text-cyan-300 ml-1 transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              隐私政策
-            </a>
-          </p>
+          {/* Footer Links */}
+          <div className="mt-6 text-center text-gray-400 text-sm space-y-2">
+            <p>
+              <a href="/privacy" className="text-cyan-400 hover:text-cyan-300 transition-colors">
+                隐私政策
+              </a>
+              {" • "}
+              <a href="/terms" className="text-cyan-400 hover:text-cyan-300 transition-colors">
+                服务条款
+              </a>
+            </p>
+          </div>
         </Card>
-
-        {/* Features */}
-        <div className="mt-8 grid grid-cols-3 gap-4 animate-fade-in-up">
-          <div className="text-center">
-            <div className="text-2xl mb-2">📊</div>
-            <p className="text-gray-300 text-sm font-semibold">数据监测</p>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl mb-2">🤖</div>
-            <p className="text-gray-300 text-sm font-semibold">AI 分析</p>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl mb-2">💡</div>
-            <p className="text-gray-300 text-sm font-semibold">健康建议</p>
-          </div>
-        </div>
       </div>
     </div>
   );

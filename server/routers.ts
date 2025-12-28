@@ -61,6 +61,57 @@ export const appRouter = router({
 
   // Sleep Records router
   sleep: router({
+    getRecords: protectedProcedure
+      .input(z.object({ limit: z.number().default(30) }).optional())
+      .query(async ({ ctx, input }) => {
+        // 返回用户最近的睡眠记录
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - (input?.limit || 30));
+        const records = await db.getSleepRecordsByDateRange(ctx.user.id, startDate, endDate);
+        return records || [];
+      }),
+    createManualRecord: protectedProcedure
+      .input(z.object({
+        recordDate: z.date(),
+        totalDuration: z.number(),
+        deepSleepPercentage: z.number(),
+        remPercentage: z.number(),
+        lightSleepPercentage: z.number(),
+        awakePercentage: z.number(),
+        qualityScore: z.number(),
+        averageHeartRate: z.number(),
+        minHeartRate: z.number(),
+        maxHeartRate: z.number(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // 创建睡眠记录
+        const sleepRecord = await db.createSleepRecord({
+          userId: ctx.user.id,
+          recordDate: input.recordDate,
+          totalDuration: input.totalDuration,
+          sleepScore: input.qualityScore,
+          deepSleepPercentage: input.deepSleepPercentage,
+          remPercentage: input.remPercentage,
+          lightSleepPercentage: input.lightSleepPercentage,
+          awakePercentage: input.awakePercentage,
+          notes: input.notes,
+          source: "manual",
+        });
+
+        // 创建心率记录
+        await db.createHeartRateData({
+          userId: ctx.user.id,
+          recordDate: input.recordDate,
+          averageHeartRate: input.averageHeartRate,
+          minHeartRate: input.minHeartRate,
+          maxHeartRate: input.maxHeartRate,
+          source: "manual",
+        });
+
+        return sleepRecord;
+      }),
     getToday: protectedProcedure.query(async ({ ctx }) => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);

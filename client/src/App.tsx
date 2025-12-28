@@ -12,12 +12,28 @@ import Notifications from "./pages/Notifications";
 import GoogleLogin from "./pages/GoogleLogin";
 import AIAssistant from "./pages/AIAssistant";
 
+import { useAuth } from "@/_core/hooks/useAuth";
+
 function Router() {
-  // make sure to consider if you need authentication for certain routes
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-white text-xl">加载中...</div>
+      </div>
+    );
+  }
+
+  // 如果未认证，显示登录页面
+  if (!isAuthenticated) {
+    return <Route component={GoogleLogin} />;
+  }
+
+  // 已认证，显示应用页面
   return (
     <Switch>
       <Route path={"/"} component={Home} />
-      <Route path={"/login"} component={GoogleLogin} />
       <Route path={"/ai-assistant"} component={AIAssistant} />
       <Route path={"/settings"} component={Settings} />
       <Route path={"/notifications"} component={Notifications} />
