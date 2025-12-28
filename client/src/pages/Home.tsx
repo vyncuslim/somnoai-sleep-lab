@@ -1,4 +1,3 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
@@ -10,6 +9,8 @@ import {
 import { Heart, Moon, Zap, TrendingUp, Calendar, Settings, LogOut, Footprints, Flame } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
+import { GoogleFitSync } from "@/components/GoogleFitSync";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function Home() {
   const { user, loading, isAuthenticated, logout } = useAuth();
@@ -18,6 +19,12 @@ export default function Home() {
   // Query today's sleep data
   const { data: todaySleep } = trpc.sleep.getToday.useQuery();
   const { data: todayHeartRate } = trpc.heartRate.getToday.useQuery();
+
+  // Google Fit sync handler
+  const handleGoogleFitSync = () => {
+    // 刷新数据
+    window.location.reload();
+  };
 
   if (loading) {
     return (

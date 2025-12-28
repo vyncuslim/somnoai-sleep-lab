@@ -45,10 +45,10 @@ function Router() {
       <Route path={"/trend-analysis"} component={TrendAnalysis} />
       <Route path={"/settings"} component={Settings} />
       <Route path={"/notifications"} component={Notifications} />
-      <Route path={"privacy"} component={Privacy} />
-      <Route path={"privacypolicy"} component={PrivacyPolicy} />
-      <Route path={"terms"} component={Terms} />
-      <Route path={"termsofservice"} component={TermsOfService} />
+      <Route path={"/privacy"} component={Privacy} />
+      <Route path={"/privacypolicy"} component={PrivacyPolicy} />
+      <Route path={"/terms"} component={Terms} />
+      <Route path={"/termsofservice"} component={TermsOfService} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
