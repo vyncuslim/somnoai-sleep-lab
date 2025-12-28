@@ -4,7 +4,7 @@
  * USAGE FROM PARENT COMPONENT:
  * ======
  *
- * const mapRef = useRef<google.maps.Map | null>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);>(null);
  *
  * <MapView
  *   initialCenter={{ lat: 40.7128, lng: -74.0060 }}
@@ -82,7 +82,7 @@ import { cn } from "@/lib/utils";
 
 declare global {
   interface Window {
-    google?: typeof google;
+    google?: any;
   }
 }
 
@@ -113,7 +113,7 @@ interface MapViewProps {
   className?: string;
   initialCenter?: google.maps.LatLngLiteral;
   initialZoom?: number;
-  onMapReady?: (map: google.maps.Map) => void;
+  onMapReady?: (map: google.maps.Map | null) => void;
 }
 
 export function MapView({

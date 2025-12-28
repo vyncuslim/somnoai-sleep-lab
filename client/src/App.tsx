@@ -9,12 +9,16 @@ import Settings from "./pages/Settings";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Notifications from "./pages/Notifications";
+import GoogleLogin from "./pages/GoogleLogin";
+import AIAssistant from "./pages/AIAssistant";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/login"} component={GoogleLogin} />
+      <Route path={"/ai-assistant"} component={AIAssistant} />
       <Route path={"/settings"} component={Settings} />
       <Route path={"/notifications"} component={Notifications} />
       <Route path={"/privacy"} component={Privacy} />
