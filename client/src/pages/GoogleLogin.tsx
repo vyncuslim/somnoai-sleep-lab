@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Mail, Lock, Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
@@ -315,13 +316,19 @@ export default function GoogleLogin() {
           {/* Footer Links */}
           <div className="mt-6 text-center text-gray-400 text-sm space-y-2">
             <p>
-              <a href="/privacy" className="text-cyan-400 hover:text-cyan-300 transition-colors">
+              <button
+                onClick={() => window.open("/privacy", "_blank")}
+                className="text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
+              >
                 隐私政策
-              </a>
+              </button>
               {" • "}
-              <a href="/terms" className="text-cyan-400 hover:text-cyan-300 transition-colors">
+              <button
+                onClick={() => window.open("/terms", "_blank")}
+                className="text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
+              >
                 服务条款
-              </a>
+              </button>
             </p>
           </div>
         </Card>

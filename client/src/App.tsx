@@ -11,6 +11,9 @@ import Terms from "./pages/Terms";
 import Notifications from "./pages/Notifications";
 import GoogleLogin from "./pages/GoogleLogin";
 import AIAssistant from "./pages/AIAssistant";
+import Calendar from "./pages/Calendar";
+import ManualEntry from "./pages/ManualEntry";
+import TrendAnalysis from "./pages/TrendAnalysis";
 
 import { useAuth } from "@/_core/hooks/useAuth";
 
@@ -34,7 +37,10 @@ function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/calendar"} component={Calendar} />
       <Route path={"/ai-assistant"} component={AIAssistant} />
+      <Route path={"/manual-entry"} component={ManualEntry} />
+      <Route path={"/trend-analysis"} component={TrendAnalysis} />
       <Route path={"/settings"} component={Settings} />
       <Route path={"/notifications"} component={Notifications} />
       <Route path={"/privacy"} component={Privacy} />
@@ -57,7 +63,7 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider
-        defaultTheme="light"
+        defaultTheme="dark"
         // switchable
       >
         <TooltipProvider>
