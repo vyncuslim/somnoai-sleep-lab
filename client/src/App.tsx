@@ -14,6 +14,8 @@ import AIAssistant from "./pages/AIAssistant";
 import Calendar from "./pages/Calendar";
 import ManualEntry from "./pages/ManualEntry";
 import TrendAnalysis from "./pages/TrendAnalysis";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 
 import { useAuth } from "@/_core/hooks/useAuth";
 
@@ -43,10 +45,10 @@ function Router() {
       <Route path={"/trend-analysis"} component={TrendAnalysis} />
       <Route path={"/settings"} component={Settings} />
       <Route path={"/notifications"} component={Notifications} />
-      <Route path={"/privacy"} component={Privacy} />
-      <Route path={"/privacypolicy"} component={Privacy} />
-      <Route path={"/terms"} component={Terms} />
-      <Route path={"/termsofservice"} component={Terms} />
+      <Route path={"privacy"} component={Privacy} />
+      <Route path={"privacypolicy"} component={PrivacyPolicy} />
+      <Route path={"terms"} component={Terms} />
+      <Route path={"termsofservice"} component={TermsOfService} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
