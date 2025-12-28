@@ -168,6 +168,58 @@ export const appRouter = router({
       }),
   }),
 
+  // AI Chat router
+  ai: router({
+    chat: protectedProcedure
+      .input(z.object({
+        message: z.string(),
+        context: z.string().optional(),
+        apiKey: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          const { GoogleGenerativeAI } = await import("@google/generative-ai");
+          const genAI = new GoogleGenerativeAI(input.apiKey);
+          const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+          const systemPrompt = `You are a professional sleep health advisor powered by SomnoAI.
+Your role is to provide personalized advice and analysis based on user sleep data.
+
+Guidelines:
+1. Always analyze based on specific data provided
+2. Give scientific and actionable advice
+3. If data suggests health issues, recommend consulting professionals
+4. Use friendly and encouraging tone
+5. Respond in Chinese
+
+${input.context || ""}
+
+Please provide professional advice based on the data and user question.`;
+
+          const chat = model.startChat({
+            history: [],
+            generationConfig: {
+              maxOutputTokens: 1024,
+              temperature: 0.7,
+            },
+          });
+
+          const result = await chat.sendMessage(systemPrompt + "\n\nUser question: " + input.message);
+          const response = result.response.text();
+
+          return { response };
+        } catch (error) {
+          console.error("AI chat error:", error);
+          if (error instanceof Error) {
+            if (error.message.includes("API key")) {
+              throw new Error("Invalid API key");
+            }
+          }
+          throw new Error("Failed to get AI response");
+        }
+      }),
+  }),
+
   // Heart Rate router
   heartRate: router({
     getToday: protectedProcedure.query(async ({ ctx }) => {

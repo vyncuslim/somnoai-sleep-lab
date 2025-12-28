@@ -103,7 +103,7 @@ export default function Home() {
             </p>
           </div>
           <div className="flex gap-3">
-            <Link href="/notifications">
+            <Link href="/calendar">
               <Button variant="ghost" className="text-cyan-400 hover:bg-cyan-400/10">
                 <Calendar className="w-5 h-5 mr-2" />
                 日历
@@ -371,6 +371,14 @@ export default function Home() {
               <Bar dataKey="score" fill="#06b6d4" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
+        </Card>
+
+        {/* Google Fit Integration */}
+        <Card className="glassmorphism p-6 mb-8 animate-fade-in-up">
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <span>🔗</span> Google Fit 同步
+          </h3>
+          <GoogleFitSync userId={user?.id || 0} onSync={handleGoogleFitSync} />
         </Card>
 
         {/* AI Insights */}

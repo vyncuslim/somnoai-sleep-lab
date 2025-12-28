@@ -89,24 +89,12 @@ export default function AIAssistant() {
 用户消息: ${inputValue}
 `;
 
-      // 调用后端 API 获取 AI 响应
-      const response = await fetch("/api/ai/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: inputValue,
-          context: context,
-          apiKey: apiKey,
-        }),
+      // 使用 tRPC 调用 AI 聊天
+      const data = await trpc.ai.chat.useMutation().mutateAsync({
+        message: inputValue,
+        context: context,
+        apiKey: apiKey,
       });
-
-      if (!response.ok) {
-        throw new Error("AI 响应失败");
-      }
-
-      const data = await response.json();
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),

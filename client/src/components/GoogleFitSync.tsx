@@ -35,7 +35,7 @@ export function GoogleFitSync({ userId, onSync }: GoogleFitSyncProps) {
 
   const handleConnect = () => {
     // 重定向到 Google OAuth 权限请求页面
-    const clientId = process.env.VITE_GOOGLE_CLIENT_ID;
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const redirectUri = `${window.location.origin}/api/oauth/google/callback`;
     const scope = [
       "https://www.googleapis.com/auth/fitness.sleep.read",
