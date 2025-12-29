@@ -312,7 +312,8 @@ Please provide professional advice based on the data and user question.`;
 
         // 构建 Google OAuth 授权 URL
         const clientId = process.env.GOOGLE_CLIENT_ID;
-        const redirectUri = `${process.env.VITE_FRONTEND_FORGE_API_URL || 'http://localhost:3000'}/api/google-fit/callback`;
+        // 使用正确的重定向 URI
+        const redirectUri = 'https://somnoai-lab-bvvlgs8k.manus.space/api/google-fit/callback';
         const scopes = [
           "https://www.googleapis.com/auth/fitness.sleep.read",
           "https://www.googleapis.com/auth/fitness.heart_rate.read",
