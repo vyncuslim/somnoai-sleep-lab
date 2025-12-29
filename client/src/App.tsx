@@ -68,8 +68,9 @@ function Router() {
 
 function App() {
   const [isGuest, setIsGuest] = useState(() => {
-    // 从 localStorage 恢复访客模式状态
-    return localStorage.getItem('somnoai-guest-mode') === 'true';
+    // 从 localStorage 恢复访客模式状态，默认为 true（访客模式）
+    const saved = localStorage.getItem('somnoai-guest-mode');
+    return saved === null ? true : saved === 'true';
   });
 
   useEffect(() => {

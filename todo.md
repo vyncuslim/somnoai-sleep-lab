@@ -250,3 +250,9 @@
 - [ ] 诊断 https://files.manuscdn.com/manus-space-dispatcher/spaceEditor-uWiuPT8S.js 加载失败
 - [ ] 检查网络连接和 CDN 可用性
 - [ ] 实现 CDN 加载失败的降级方案
+
+
+## 新增功能 - 默认访客模式
+- [x] 修改 App.tsx 使其默认进入访客模式
+- [x] 用户无需登录即可使用应用
+- [x] 用户仍可在 Home 中选择退出访客模式
