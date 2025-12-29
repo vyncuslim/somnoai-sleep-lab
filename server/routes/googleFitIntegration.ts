@@ -94,8 +94,10 @@ router.get("/api/google-fit/auth-url", async (req: Request, res: Response) => {
  */
 router.get("/api/google-fit/callback", async (req: Request, res: Response) => {
   try {
+    // 更新重定向 URI 以确保一致性
     updateRedirectUri(req);
-    const { code, state } = req.query;
+    
+    const { code, state, error } = req.query;
 
     if (!code) {
       return res.redirect("/?google_fit_error=missing_code");
@@ -122,7 +124,31 @@ router.get("/api/google-fit/callback", async (req: Request, res: Response) => {
     }
 
     // 交换授权码获取访问令牌
-    const { tokens } = await oauth2Client.getToken(code as string);
+    console.log("[Google Fit] Attempting to exchange auth code");
+    console.log("[Google Fit] OAuth2Client redirectUri:", oauth2Client.redirectUri);
+    console.log("[Google Fit] Auth code:", code ? code.substring(0, 20) + "..." : "missing");
+    
+    let tokens;
+    try {
+      const response = await oauth2Client.getToken(code as string);
+      tokens = response.tokens;
+      console.log("[Google Fit] Successfully exchanged auth code for tokens");
+    } catch (tokenError) {
+      console.error("[Google Fit] Failed to exchange auth code:", tokenError);
+      if (tokenError instanceof Error) {
+        console.error("[Google Fit] Error details:", tokenError.message);
+      }
+      console.error("[Google Fit] Redirect URI:", oauth2Client.redirectUri);
+      console.error("[Google Fit] Request host:", req.get('host'));
+      console.error("[Google Fit] Request protocol:", req.protocol);
+      return res.redirect("/?google_fit_error=token_exchange_failed");
+    }
+    
+    if (!tokens || !tokens.access_token) {
+      console.error("[Google Fit] No access token in response");
+      return res.redirect("/?google_fit_error=no_access_token");
+    }
+    
     oauth2Client.setCredentials(tokens);
 
     // 保存 Google Fit 集成信息
@@ -154,8 +180,12 @@ router.get("/api/google-fit/callback", async (req: Request, res: Response) => {
     // 重定向到首页
     res.redirect("/?google_fit_connected=true");
   } catch (error) {
-    console.error("Google Fit callback error:", error);
-    res.status(500).json({ error: "Authentication failed" });
+    console.error("[Google Fit] Callback error:", error);
+    if (error instanceof Error) {
+      console.error("[Google Fit] Error message:", error.message);
+      console.error("[Google Fit] Error stack:", error.stack);
+    }
+    res.redirect("/?google_fit_error=callback_error");
   }
 });
 
