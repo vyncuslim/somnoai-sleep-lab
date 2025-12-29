@@ -20,6 +20,7 @@ import SleepGoals from "./pages/SleepGoals";
 
 import { useAuth } from "@/_core/hooks/useAuth";
 import Landing from "./pages/Landing";
+import { Auth } from "./components/Auth";
 
 function Router() {
   const { isAuthenticated, loading } = useAuth();
@@ -32,11 +33,12 @@ function Router() {
     );
   }
 
-  // 如果未认证，显示公开首页
+  // 如果未认证，显示登录页面或公开首页
   if (!isAuthenticated) {
     return (
       <Switch>
         <Route path="/" component={Landing} />
+        <Route path="/auth" component={Auth} />
         <Route path="/privacypolicy" component={PrivacyPolicy} />
         <Route path="/termsofservice" component={TermsOfService} />
         <Route component={Landing} />
