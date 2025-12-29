@@ -27,7 +27,7 @@ const GuestModeContext = React.createContext<{
 export const useGuestMode = () => React.useContext(GuestModeContext);
 
 function Router() {
-  const { isGuest } = useGuestMode();
+  const { isGuest, setIsGuest } = useGuestMode();
   const [isLoading, setIsLoading] = useState(false);
 
   // 如果是访客模式，显示应用
@@ -75,7 +75,7 @@ function Router() {
       </div>
       <div className="flex flex-col w-full max-w-xs gap-3">
         <button 
-          onClick={() => window.location.href = '/'}
+          onClick={() => setIsGuest(true)}
           className="w-full py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-3xl font-black text-sm uppercase tracking-widest transition-all active:scale-95 shadow-2xl shadow-indigo-600/30"
         >
           进入应用
