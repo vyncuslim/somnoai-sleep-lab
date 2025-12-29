@@ -112,7 +112,12 @@ router.get("/api/google-fit/callback", async (req: Request, res: Response) => {
       }
     }
 
-    if (!userId || userId === "anonymous") {
+    // 如果没有 userId，使用默认访客用户 ID
+    if (!userId) {
+      userId = 1; // Default guest user
+    }
+
+    if (!userId) {
       return res.redirect("/?google_fit_error=not_authenticated");
     }
 

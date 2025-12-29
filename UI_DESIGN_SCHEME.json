@@ -1,0 +1,43 @@
+{
+  "designPhilosophy": "SomnoAI 的设计理念围绕着'智慧、宁静与赋能'。我们旨在通过极简的界面，呈现复杂但清晰的睡眠数据，让用户能够直观地理解自己的睡眠模式，并由 AI 智能驱动，提供个性化的洞察和建议。设计将融合现代极简主义的简洁与科技感的未来元素，创造一个既专业又舒适的用户体验，帮助用户轻松掌控并改善睡眠质量。",
+  "colorScheme": {
+    "primary": "#00C4FF",
+    "secondary": "#80F0C0",
+    "neutral": {
+      "background": "#121212",
+      "surface": "#1A1A2E",
+      "textPrimary": "#E0E0E0",
+      "textSecondary": "#A0A0A0"
+    },
+    "description": "主色 (Primary: #00C4FF - 电光蓝) 代表科技、智能与活力，用于关键信息、交互元素和图表强调色。辅助色 (Secondary: #80F0C0 - 薄荷绿) 用于积极反馈、健康指标和对比数据。中性色 (Neutral) 采用深色主题：背景色 (Background: #121212 - 深太空黑) 提供沉浸感，界面色 (Surface: #1A1A2E - 深靛蓝) 用于卡片和功能区，主文字色 (Text Primary: #E0E0E0 - 灰白) 确保高可读性，辅助文字色 (Text Secondary: #A0A0A0 - 浅灰) 用于描述性信息。"
+  },
+  "typography": {
+    "headingFont": "Exo 2",
+    "bodyFont": "Inter",
+    "sizes": {
+      "h1": "font-extrabold text-4xl",
+      "h2": "font-bold text-3xl",
+      "h3": "font-semibold text-xl",
+      "body": "text-base",
+      "caption": "text-sm",
+      "label": "font-medium text-xs uppercase tracking-wider"
+    },
+    "description": "选用 Exo 2 作为标题字体，其几何、略带科技感的风格与应用调性相符。Inter 作为正文字体，以其现代、高可读性和多语言支持而闻名，确保内容清晰呈现。字体大小规范采用 Tailwind CSS 类名描述，易于在开发中实现。"
+  },
+  "layout": {
+    "welcomePage": "欢迎页面将采用全屏深色背景，中央是 SomnoAI 品牌 Logo（或动态 Logo），下方配以醒目的品牌标语 '解锁您的最佳睡眠'。通过引人入胜的 AI 睡眠可视化动画作为背景层，营造科技感和神秘感。底部是简洁的 '立即开始' 和 '登录' 按钮，引导用户进入应用。整体设计极简而富有冲击力。",
+    "mainApp": "应用主界面（Dashboard）采用卡片式布局，背景为深太空黑，卡片为深靛蓝色。顶部显示当前日期和问候语。下方是核心数据概览卡片，如 '昨晚睡眠得分'、'总睡眠时长' 等，使用大号数字和简洁图示。AI 分析洞察和睡眠目标进度也以独立卡片展示。所有卡片之间留有充足的留白，形成清晰的视觉层次。底部导航栏固定显示核心功能入口。整体布局清晰、数据一目了然。",
+    "navigation": "采用底部导航栏 (Bottom Tab Bar)，包含 '首页 (Dashboard)'、'趋势 (Trends)'、'日历 (Calendar)'、'目标 (Goals)'、'我的 (Profile/Settings)' 五个主要入口。图标设计将采用线条风格，选中时填充并配合主色高亮显示，提供即时视觉反馈。在次级页面或设置页，则采用顶部返回箭头和列表式导航。"
+  },
+  "components": {
+    "buttons": {
+      "primary": "主行动按钮：圆角矩形，填充 #00C4FF (Electric Blue) 背景，白色文字。悬停时有微弱光晕或深度变化。Tailwind 类名示例: `bg-[#00C4FF] text-white rounded-lg px-6 py-3 font-semibold shadow-lg hover:shadow-[#00C4FF]/50 transition-all duration-200`",
+      "secondary": "次要行动按钮：透明背景，#00C4FF (Electric Blue) 边框和文字。悬停时背景填充浅蓝色。Tailwind 类名示例: `border-2 border-[#00C4FF] text-[#00C4FF] rounded-lg px-6 py-3 font-semibold hover:bg-[#00C4FF]/10 transition-all duration-200`",
+      "textOnly": "文本按钮：仅显示文本，#00C4FF (Electric Blue) 颜色，悬停时下划线或颜色略深。Tailwind 类名示例: `text-[#00C4FF] hover:underline`"
+    },
+    "cards": "数据卡片：深靛蓝 (#1A1A2E) 背景，圆角 (radius-xl)，轻微的内发光边框或细致的阴影效果，营造浮动感。内容排版简洁，关键数据使用大字号，次级信息使用辅助文字色。Tailwind 类名示例: `bg-[#1A1A2E] rounded-xl p-4 shadow-md border border-gray-700/50` (可结合 `backdrop-blur-md` 增加半透明磨砂效果)",
+    "charts": "图表展示：采用极简主义风格，移除不必要的网格线和边框，只保留核心数据。线条图将使用 #00C4FF 作为主要数据线颜色，#80F0C0 作为对比或次要数据线。柱状图和饼图也将遵循此配色方案。图表将具有交互性，例如触控显示数据点详情（Tooltip），并伴随流畅的动画效果（如数据加载和更新时的渐变、描绘动画）。"
+  },
+  "interactions": "交互设计注重流畅和反馈感：1. 触控反馈: 所有可点击元素在被触碰时，都有轻微的震动反馈（Haptic Feedback）和视觉上的状态变化（如颜色变深、光晕效果）。2. 页面切换: 采用平滑的渐隐/渐入或轻微的滑动过渡动画，避免生硬跳转。3. 数据可视化: 图表加载和数据更新时，会有动态绘制、数字跳动和颜色渐变等动画，提升数据理解的趣味性和直观性。4. 微交互: 例如，完成睡眠目标时，出现短暂的庆祝动画或粒子效果；AI 分析结果生成时，有科技感的数据处理动画。手动录入时，输入框有聚焦动画和清晰的错误提示。",
+  "responsive": "应用将采用移动优先 (Mobile-First) 的设计策略，确保在不同尺寸的移动设备上都能提供最佳体验。1. 弹性布局: 使用 Flexbox 和 Grid 布局，使内容和组件能够根据屏幕宽度自动调整和重排。2. 字体和间距: 字体大小和组件间距将根据设备屏幕大小进行适当缩放，保证可读性和触摸区域。3. 导航适配: 移动端使用底部导航栏；平板设备上，底部导航栏可能变为侧边抽屉式导航或顶部固定导航，以更好地利用屏幕空间。4. 图片和图表: 图片将采用自适应大小，图表会根据可用空间自动调整其轴标签和数据点密度，确保数据清晰可见。"
+}
