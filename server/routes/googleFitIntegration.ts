@@ -129,9 +129,14 @@ router.get("/api/google-fit/callback", async (req: Request, res: Response) => {
     
     let tokens;
     try {
+      console.log("[Google Fit] Client ID:", process.env.GOOGLE_CLIENT_ID ? "SET" : "NOT SET");
+      console.log("[Google Fit] Client Secret:", process.env.GOOGLE_CLIENT_SECRET ? "SET" : "NOT SET");
+      console.log("[Google Fit] Calling oauth2Client.getToken()...");
+      
       const response = await oauth2Client.getToken(code as string);
       tokens = response.tokens;
       console.log("[Google Fit] Successfully exchanged auth code for tokens");
+      console.log("[Google Fit] Access token:", tokens.access_token ? "RECEIVED" : "MISSING");
     } catch (tokenError) {
       console.error("[Google Fit] Failed to exchange auth code:", tokenError);
       if (tokenError instanceof Error) {
