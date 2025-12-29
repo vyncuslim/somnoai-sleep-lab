@@ -129,20 +129,46 @@ router.get("/api/google-fit/callback", async (req: Request, res: Response) => {
     
     let tokens;
     try {
-      console.log("[Google Fit] Client ID:", process.env.GOOGLE_CLIENT_ID ? "SET" : "NOT SET");
-      console.log("[Google Fit] Client Secret:", process.env.GOOGLE_CLIENT_SECRET ? "SET" : "NOT SET");
-      console.log("[Google Fit] Calling oauth2Client.getToken()...");
+      console.log("[Google Fit] Attempting token exchange using HTTP request");
+      console.log("[Google Fit] Code:", typeof code === 'string' ? code.substring(0, 20) + "..." : "missing");
       
-      const response = await oauth2Client.getToken(code as string);
-      tokens = response.tokens;
+      // 使用 HTTP 请求直接交换授权码
+      const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          code: code as string,
+          client_id: process.env.GOOGLE_CLIENT_ID || '',
+          client_secret: process.env.GOOGLE_CLIENT_SECRET || '',
+          redirect_uri: `${req.protocol}://${req.get('host')}/api/google-fit/callback`,
+          grant_type: 'authorization_code',
+        }).toString(),
+      });
+
+      const tokenData = await tokenResponse.json();
+      
+      if (!tokenResponse.ok) {
+        console.error("[Google Fit] Token exchange failed:", tokenData);
+        throw new Error(`Token exchange failed: ${tokenData.error || 'unknown error'}`);
+      }
+
+      tokens = {
+        access_token: tokenData.access_token,
+        refresh_token: tokenData.refresh_token,
+        expiry_date: tokenData.expires_in ? Date.now() + tokenData.expires_in * 1000 : undefined,
+      };
+      
       console.log("[Google Fit] Successfully exchanged auth code for tokens");
       console.log("[Google Fit] Access token:", tokens.access_token ? "RECEIVED" : "MISSING");
     } catch (tokenError) {
-      console.error("[Google Fit] Failed to exchange auth code:", tokenError);
+      console.error("[Google Fit] Failed to exchange auth code");
       if (tokenError instanceof Error) {
-        console.error("[Google Fit] Error details:", tokenError.message);
+        console.error("[Google Fit] Error message:", tokenError.message);
+      } else {
+        console.error("[Google Fit] Error:", tokenError);
       }
-      console.error("[Google Fit] Redirect URI:", "[private]");
       console.error("[Google Fit] Request host:", req.get('host'));
       console.error("[Google Fit] Request protocol:", req.protocol);
       return res.redirect("/?google_fit_error=token_exchange_failed");
