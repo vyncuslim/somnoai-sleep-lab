@@ -98,8 +98,15 @@ router.get("/api/google-fit/callback", async (req: Request, res: Response) => {
     updateRedirectUri(req);
     
     const { code, state, error } = req.query;
+    
+    // Check for Google OAuth errors
+    if (error) {
+      console.error("[Google Fit] Google OAuth error:", error);
+      return res.redirect(`/?google_fit_error=${error}`);
+    }
 
     if (!code) {
+      console.error("[Google Fit] No authorization code received");
       return res.redirect("/?google_fit_error=missing_code");
     }
 
@@ -133,6 +140,11 @@ router.get("/api/google-fit/callback", async (req: Request, res: Response) => {
       console.log("[Google Fit] Code:", typeof code === 'string' ? code.substring(0, 20) + "..." : "missing");
       
       // 使用 HTTP 请求直接交换授权码
+      const redirectUri = `${req.protocol}://${req.get('host')}/api/google-fit/callback`;
+      console.log("[Google Fit] Redirect URI:", redirectUri);
+      console.log("[Google Fit] Client ID:", process.env.GOOGLE_CLIENT_ID ? process.env.GOOGLE_CLIENT_ID.substring(0, 20) + '...' : 'NOT SET');
+      console.log("[Google Fit] Client Secret:", process.env.GOOGLE_CLIENT_SECRET ? process.env.GOOGLE_CLIENT_SECRET.substring(0, 20) + '...' : 'NOT SET');
+      
       const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: {
@@ -142,16 +154,19 @@ router.get("/api/google-fit/callback", async (req: Request, res: Response) => {
           code: code as string,
           client_id: process.env.GOOGLE_CLIENT_ID || '',
           client_secret: process.env.GOOGLE_CLIENT_SECRET || '',
-          redirect_uri: `${req.protocol}://${req.get('host')}/api/google-fit/callback`,
+          redirect_uri: redirectUri,
           grant_type: 'authorization_code',
         }).toString(),
       });
 
       const tokenData = await tokenResponse.json();
+      console.log("[Google Fit] Token response status:", tokenResponse.status);
+      console.log("[Google Fit] Token response data:", JSON.stringify(tokenData, null, 2));
       
       if (!tokenResponse.ok) {
-        console.error("[Google Fit] Token exchange failed:", tokenData);
-        throw new Error(`Token exchange failed: ${tokenData.error || 'unknown error'}`);
+        console.error("[Google Fit] Token exchange failed with status", tokenResponse.status);
+        console.error("[Google Fit] Error details:", tokenData);
+        throw new Error(`Token exchange failed: ${tokenData.error || 'unknown error'} - ${tokenData.error_description || ''}`);
       }
 
       tokens = {

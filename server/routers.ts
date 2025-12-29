@@ -312,8 +312,11 @@ Please provide professional advice based on the data and user question.`;
 
         // 构建 Google OAuth 授权 URL
         const clientId = process.env.GOOGLE_CLIENT_ID;
-        // 使用正确的重定向 URI
-        const redirectUri = 'https://somnoai-lab-bvvlgs8k.manus.space/api/google-fit/callback';
+        // 动态构建重定向 URI，确保与回调路由中的一致
+        const host = ctx.req?.get('host') || 'somnoai-lab-bvvlgs8k.manus.space';
+        const protocol = ctx.req?.protocol || 'https';
+        const redirectUri = `${protocol}://${host}/api/google-fit/callback`;
+        console.log('[Google Fit] Auth URL redirect_uri:', redirectUri);
         const scopes = [
           "https://www.googleapis.com/auth/fitness.sleep.read",
           "https://www.googleapis.com/auth/fitness.heart_rate.read",
