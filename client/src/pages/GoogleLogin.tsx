@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Mail, Lock, Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { loadGoogleSDK, isGoogleSDKAvailable } from "@/lib/googleSDK";
 
 interface GoogleSignInResponse {
   credential: string;
@@ -23,54 +24,30 @@ export default function GoogleLogin() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [googleLoaded, setGoogleLoaded] = useState(false);
+  const [googleError, setGoogleError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 加载 Google Sign-In 脚本
-    const loadGoogleSDK = () => {
-      // 检查是否已经加载过
-      if (window.google?.accounts?.id) {
-        console.log("✓ Google SDK 已加载");
+    // 加载 Google SDK
+    loadGoogleSDK({
+      maxRetries: 3,
+      timeout: 10000,
+      onSuccess: () => {
+        console.log("✓ Google SDK 加载成功");
         setGoogleLoaded(true);
+        setGoogleError(null);
         initializeGoogleSignIn();
-        return;
-      }
-
-      // 检查脚本是否已存在
-      const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
-      if (existingScript) {
-        console.log("✓ Google SDK 脚本已存在");
-        return;
-      }
-
-      const script = document.createElement("script");
-      script.src = "https://accounts.google.com/gsi/client";
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        console.log("✓ Google SDK 已加载");
-        setGoogleLoaded(true);
-        // 延迟初始化以确保 window.google 已准备好
-        setTimeout(() => {
-          initializeGoogleSignIn();
-        }, 100);
-      };
-      script.onerror = () => {
-        console.error("✗ Google SDK 加载失败");
+      },
+      onError: (error) => {
+        console.error("✗ Google SDK 加载失败:", error.message);
         setGoogleLoaded(false);
-      };
-      document.head.appendChild(script);
-    };
-
-    loadGoogleSDK();
-
-    return () => {
-      // 不移除脚本，因为它可能被其他组件使用
-    };
+        setGoogleError(error.message);
+      },
+    });
   }, []);
 
   const initializeGoogleSignIn = () => {
     try {
-      if (window.google?.accounts?.id) {
+      if (isGoogleSDKAvailable()) {
         window.google.accounts.id.initialize({
           client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "312904526470-84ra3lld33sci0kvhset8523b0hdul1c.apps.googleusercontent.com",
           callback: handleGoogleSignIn,
@@ -89,11 +66,12 @@ export default function GoogleLogin() {
           });
         }
       } else {
-        console.warn("Google SDK 尚未加载，将重试...");
+        console.warn("Google SDK 尚未可用");
         setTimeout(initializeGoogleSignIn, 500);
       }
     } catch (error) {
       console.error("初始化 Google Sign-In 失败:", error);
+      setGoogleError("Google Sign-In 初始化失败");
     }
   };
 
@@ -229,14 +207,37 @@ export default function GoogleLogin() {
             </button>
           </div>
 
+          {/* Google SDK Error Alert */}
+          {googleError && (
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-red-300 text-sm font-semibold">Google 服务加载失败</p>
+                <p className="text-red-200 text-xs mt-1">{googleError}</p>
+                <p className="text-red-200 text-xs mt-2">您仍可以使用邮箱登录。Google Fit 集成需要 Google 服务可用。</p>
+              </div>
+            </div>
+          )}
+
           {/* Google Sign-In Button */}
-          <div id="google-signin-button" className="mb-6 flex justify-center" />
+          {!googleError && (
+            <div id="google-signin-button" className="mb-6 flex justify-center" />
+          )}
+
+          {/* Google Sign-In Loading State */}
+          {!googleLoaded && !googleError && (
+            <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
+              <span className="text-blue-300 text-sm">正在加载 Google 服务...</span>
+            </div>
+          )}
 
           {/* Connect Google Fit Button */}
           <button
             onClick={handleConnectGoogleFit}
-            disabled={isLoading}
+            disabled={isLoading || !googleLoaded}
             className="w-full mb-6 py-3 px-4 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-lg font-semibold hover:shadow-lg hover:shadow-green-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            title={!googleLoaded ? "Google 服务加载中..." : ""}
           >
             {isLoading ? (
               <>
