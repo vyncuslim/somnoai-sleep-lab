@@ -321,7 +321,16 @@ Please provide professional advice based on the data and user question.`;
           "https://www.googleapis.com/auth/fitness.body.read",
         ];
 
-        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scopes.join(' '))}&access_type=offline`;
+        // 使用 URLSearchParams 构建 OAuth URL，避免编码问题
+        const params = new URLSearchParams({
+          client_id: clientId || '',
+          redirect_uri: redirectUri,
+          response_type: 'code',
+          scope: scopes.join(' '),
+          access_type: 'offline',
+          prompt: 'consent',
+        });
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 
         return { connected: false, authUrl };
       } catch (error) {
