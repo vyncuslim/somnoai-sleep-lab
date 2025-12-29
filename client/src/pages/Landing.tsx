@@ -11,12 +11,17 @@ export default function Landing() {
           <Moon className="w-8 h-8 text-cyan-400" />
           <h1 className="text-2xl font-bold text-white">SomnoAI Digital Sleep Lab</h1>
         </div>
-        <Button
-          onClick={() => (window.location.href = getLoginUrl())}
-          className="bg-cyan-600 hover:bg-cyan-700 text-white"
-        >
-          登录
-        </Button>
+        <div className="flex items-center gap-4">
+          <a href="/privacypolicy" className="text-gray-300 hover:text-cyan-400 transition text-sm">
+            隐私政策
+          </a>
+          <Button
+            onClick={() => (window.location.href = getLoginUrl())}
+            className="bg-cyan-600 hover:bg-cyan-700 text-white"
+          >
+            登录
+          </Button>
+        </div>
       </nav>
 
       {/* Hero Section */}

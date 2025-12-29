@@ -125,8 +125,7 @@ router.get("/api/google-fit/callback", async (req: Request, res: Response) => {
 
     // 交换授权码获取访问令牌
     console.log("[Google Fit] Attempting to exchange auth code");
-    console.log("[Google Fit] OAuth2Client redirectUri:", oauth2Client.redirectUri);
-    console.log("[Google Fit] Auth code:", code ? code.substring(0, 20) + "..." : "missing");
+    console.log("[Google Fit] Auth code:", typeof code === 'string' ? code.substring(0, 20) + "..." : "missing");
     
     let tokens;
     try {
@@ -138,7 +137,7 @@ router.get("/api/google-fit/callback", async (req: Request, res: Response) => {
       if (tokenError instanceof Error) {
         console.error("[Google Fit] Error details:", tokenError.message);
       }
-      console.error("[Google Fit] Redirect URI:", oauth2Client.redirectUri);
+      console.error("[Google Fit] Redirect URI:", "[private]");
       console.error("[Google Fit] Request host:", req.get('host'));
       console.error("[Google Fit] Request protocol:", req.protocol);
       return res.redirect("/?google_fit_error=token_exchange_failed");
