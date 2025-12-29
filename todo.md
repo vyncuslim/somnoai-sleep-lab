@@ -176,3 +176,45 @@
 - [x] 测试 Google SDK 加载失败的情况
 - [x] 测试网络中断后的恢复
 - [x] 测试多次重试的行为
+
+
+## 新增功能 - Google Fit 标准流程集成
+
+### 前端 Google 登录优化
+- [x] 使用 Google Identity Services 库获取 authorization_code
+- [x] 改进前端 Google 登录组件（使用官方 Google Sign-In 组件）
+- [x] 处理 authorization_code 并发送到后端
+- [x] 后端交换 authorization_code 获取 access_token 和 refresh_token
+
+### 授权确认流程
+- [ ] 创建权限确认页面，让用户勾选要授予的权限
+- [ ] 显示 Google Fit 数据访问权限列表（步数、活动、睡眠、心率等）
+- [ ] 用户确认后，后端使用 access_token 调用 Google Fit API
+
+### Google Fit API 调用
+- [x] 实现获取步数数据（Step Count）
+- [x] 实现获取活动类型数据（Activity Segments）
+- [x] 实现获取睡眠阶段数据（Sleep Stages）
+- [x] 实现获取心率数据（Heart Rate）
+- [x] 处理 API 响应并存储到本地数据库
+
+### 数据治理
+- [x] 不在数据库中缓存 access_token 和 refresh_token
+- [x] 使用环境变量或安全存储保存 token
+- [x] 实现用户数据删除機制（删除所有同步的 Google Fit 数据）
+- [x] 实现 token 刷新機制（当 token 过期时自动刷新）
+- [ ] 添加数据加密存储（敏感数据）
+
+### 隐私和安全
+- [x] 更新隐私政策，说明 token 不被缓存
+- [ ] 添加数据删除选项到用户设置
+- [x] 实现审计日志（记录数据访问和删除操作）
+- [ ] 添加 token 过期时间显示和手动刷新选项
+
+### 测试
+- [x] 编写单元测试验证 Google Fit API 数据解析
+- [x] 测试所有数据类型（步数、活动、睡眠、心率）
+- [x] 测试数据解析的边界情况
+- [ ] 测试 token 刷新機制
+- [ ] 测试数据删除機制
+- [ ] 测试错误处理（API 失败、权限不足等）
