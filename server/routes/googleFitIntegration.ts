@@ -37,6 +37,12 @@ const updateRedirectUri = (req: Request) => {
  */
 router.get("/api/google-fit/auth-url", (req: Request, res: Response) => {
   try {
+    // 检查用户是否已认证
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
     updateRedirectUri(req);
     const scopes = [
       "https://www.googleapis.com/auth/fitness.sleep.read",
@@ -49,7 +55,7 @@ router.get("/api/google-fit/auth-url", (req: Request, res: Response) => {
       access_type: "offline",
       scope: scopes,
       prompt: "consent",
-      state: JSON.stringify({ userId: (req as any).user?.id || "anonymous" }),
+      state: JSON.stringify({ userId }),
     });
 
     res.json({ authUrl });
@@ -165,8 +171,9 @@ router.get("/api/google-fit/status", async (req: Request, res: Response) => {
 
     const integration = await db.getGoogleFitIntegration(userId);
     res.json({
-      connected: !!integration,
+      isConnected: !!integration,
       lastSyncAt: integration?.lastSyncAt,
+      syncStatus: integration ? "idle" : "disconnected",
     });
   } catch (error) {
     console.error("Status error:", error);
