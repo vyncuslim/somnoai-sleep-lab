@@ -122,20 +122,24 @@ router.get("/api/google-fit/callback", async (req: Request, res: Response) => {
 
     // 保存 Google Fit 集成信息
     const existingIntegration = await db.getGoogleFitIntegration(userId);
+    const tokenExpiry = tokens.expiry_date ? new Date(tokens.expiry_date) : new Date(Date.now() + 3600000);
+    
     if (existingIntegration) {
       await db.updateGoogleFitIntegration(userId, {
         accessToken: tokens.access_token || "",
-        refreshToken: tokens.refresh_token,
-        expiresAt: new Date(tokens.expiry_date || Date.now() + 3600000),
+        refreshToken: tokens.refresh_token || existingIntegration.refreshToken,
+        tokenExpiry: tokenExpiry,
         lastSyncAt: new Date(),
+        isConnected: 1,
       });
     } else {
       await db.createGoogleFitIntegration({
         userId,
         accessToken: tokens.access_token || "",
         refreshToken: tokens.refresh_token,
-        expiresAt: new Date(tokens.expiry_date || Date.now() + 3600000),
+        tokenExpiry: tokenExpiry,
         lastSyncAt: new Date(),
+        isConnected: 1,
       });
     }
 

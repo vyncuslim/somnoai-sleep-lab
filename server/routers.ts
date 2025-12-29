@@ -318,7 +318,7 @@ Please provide professional advice based on the data and user question.`;
         const integration = await db.getGoogleFitIntegration(ctx.user.id);
         return {
           connected: !!integration && !!integration.accessToken,
-          lastSync: integration?.lastSyncTime || null,
+          lastSync: integration?.lastSyncAt || null,
         };
       } catch (error) {
         console.error("Failed to get status:", error);
