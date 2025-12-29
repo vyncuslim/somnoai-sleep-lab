@@ -26,42 +26,74 @@ export default function GoogleLogin() {
 
   useEffect(() => {
     // 加载 Google Sign-In 脚本
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      setGoogleLoaded(true);
-      initializeGoogleSignIn();
+    const loadGoogleSDK = () => {
+      // 检查是否已经加载过
+      if (window.google?.accounts?.id) {
+        console.log("✓ Google SDK 已加载");
+        setGoogleLoaded(true);
+        initializeGoogleSignIn();
+        return;
+      }
+
+      // 检查脚本是否已存在
+      const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+      if (existingScript) {
+        console.log("✓ Google SDK 脚本已存在");
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        console.log("✓ Google SDK 已加载");
+        setGoogleLoaded(true);
+        // 延迟初始化以确保 window.google 已准备好
+        setTimeout(() => {
+          initializeGoogleSignIn();
+        }, 100);
+      };
+      script.onerror = () => {
+        console.error("✗ Google SDK 加载失败");
+        setGoogleLoaded(false);
+      };
+      document.head.appendChild(script);
     };
-    document.head.appendChild(script);
+
+    loadGoogleSDK();
 
     return () => {
-      if (document.head.contains(script)) {
-        document.head.removeChild(script);
-      }
+      // 不移除脚本，因为它可能被其他组件使用
     };
   }, []);
 
   const initializeGoogleSignIn = () => {
-    if (window.google?.accounts?.id) {
-      window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "312904526470-84ra3lld33sci0kvhset8523b0hdul1c.apps.googleusercontent.com",
-        callback: handleGoogleSignIn,
-        auto_select: false,
-        itp_support: true,
-      });
-
-      const buttonElement = document.getElementById("google-signin-button");
-      if (buttonElement) {
-        window.google.accounts.id.renderButton(buttonElement, {
-          type: "standard",
-          theme: "dark",
-          size: "large",
-          text: "signin_with",
-          width: "100%",
+    try {
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "312904526470-84ra3lld33sci0kvhset8523b0hdul1c.apps.googleusercontent.com",
+          callback: handleGoogleSignIn,
+          auto_select: false,
+          itp_support: true,
         });
+
+        const buttonElement = document.getElementById("google-signin-button");
+        if (buttonElement) {
+          window.google.accounts.id.renderButton(buttonElement, {
+            type: "standard",
+            theme: "dark",
+            size: "large",
+            text: "signin_with",
+            width: "100%",
+          });
+        }
+      } else {
+        console.warn("Google SDK 尚未加载，将重试...");
+        setTimeout(initializeGoogleSignIn, 500);
       }
+    } catch (error) {
+      console.error("初始化 Google Sign-In 失败:", error);
     }
   };
 
@@ -102,7 +134,7 @@ export default function GoogleLogin() {
     setIsLoading(true);
     try {
       const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "312904526470-84ra3lld33sci0kvhset8523b0hdul1c.apps.googleusercontent.com";
-      const redirectUri = `${window.location.origin}/api/auth/google-fit-callback`;
+      const redirectUri = `${window.location.origin}/api/google-fit/callback`;
       const scope = "https://www.googleapis.com/auth/fitness.sleep.read https://www.googleapis.com/auth/fitness.heart_rate.read";
       
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline`;
