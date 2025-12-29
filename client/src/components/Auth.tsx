@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { googleFitService } from '@/services/googleFitService';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
@@ -7,25 +6,17 @@ export function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // 初始化 Google Identity Services
-    initializeGSI();
-  }, []);
-
-  const initializeGSI = async () => {
-    try {
-      await googleFitService.initGSI();
-    } catch (err) {
-      console.error('Failed to initialize GSI:', err);
-      setError('Failed to initialize Google Sign-In. Please refresh the page.');
-    }
-  };
-
   const handleConnectGoogleFit = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      googleFitService.authorize();
+      // 使用后端 OAuth 流程
+      const response = await fetch('/api/google-fit/auth-url');
+      if (!response.ok) {
+        throw new Error('Failed to get auth URL');
+      }
+      const data = await response.json();
+      window.location.href = data.authUrl;
     } catch (err) {
       console.error('Failed to connect Google Fit:', err);
       setError('Failed to connect to Google Fit. Please try again.');

@@ -285,6 +285,48 @@ Please provide professional advice based on the data and user question.`;
       }),
   }),
 
+  // Google Fit Integration router
+  googleFit: router({
+    getAuthUrl: protectedProcedure.query(async ({ ctx }) => {
+      try {
+        // 获取用户的 Google Fit 集成状态
+        const integration = await db.getGoogleFitIntegration(ctx.user.id);
+        if (integration && integration.accessToken) {
+          return { connected: true, message: "Already connected" };
+        }
+
+        // 构建 Google OAuth 授权 URL
+        const clientId = process.env.GOOGLE_CLIENT_ID;
+        const redirectUri = `${process.env.VITE_FRONTEND_FORGE_API_URL || 'http://localhost:3000'}/api/google-fit/callback`;
+        const scopes = [
+          "https://www.googleapis.com/auth/fitness.sleep.read",
+          "https://www.googleapis.com/auth/fitness.heart_rate.read",
+          "https://www.googleapis.com/auth/fitness.activity.read",
+          "https://www.googleapis.com/auth/fitness.body.read",
+        ];
+
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scopes.join(' '))}&access_type=offline`;
+
+        return { connected: false, authUrl };
+      } catch (error) {
+        console.error("Failed to get auth URL:", error);
+        throw new Error("Failed to get Google Fit auth URL");
+      }
+    }),
+    getStatus: protectedProcedure.query(async ({ ctx }) => {
+      try {
+        const integration = await db.getGoogleFitIntegration(ctx.user.id);
+        return {
+          connected: !!integration && !!integration.accessToken,
+          lastSync: integration?.lastSyncTime || null,
+        };
+      } catch (error) {
+        console.error("Failed to get status:", error);
+        throw new Error("Failed to get Google Fit status");
+      }
+    }),
+  }),
+
   // Sleep Goals router
   sleepGoals: router({
     get: protectedProcedure.query(async ({ ctx }) => {

@@ -1,8 +1,21 @@
 import { Router, Request, Response } from "express";
 import { google } from "googleapis";
 import * as db from "../db";
+import { sdk } from "../_core/sdk";
 
 const router = Router();
+
+// 中间件：为所有路由添加用户认证
+router.use(async (req: Request, res: Response, next) => {
+  try {
+    const user = await sdk.authenticateRequest(req);
+    (req as any).user = user;
+  } catch (error) {
+    // 用户未认证，但继续处理
+    (req as any).user = null;
+  }
+  next();
+});
 
 // 获取应用的正确 URL
 const getRedirectUri = () => {
@@ -35,10 +48,21 @@ const updateRedirectUri = (req: Request) => {
 /**
  * 获取 Google Fit 授权 URL
  */
-router.get("/api/google-fit/auth-url", (req: Request, res: Response) => {
+router.get("/api/google-fit/auth-url", async (req: Request, res: Response) => {
   try {
     // 检查用户是否已认证
-    const userId = (req as any).user?.id;
+    let userId = (req as any).user?.id;
+    
+    // 如果中间件没有设置用户，尝试直接认证
+    if (!userId) {
+      try {
+        const user = await sdk.authenticateRequest(req);
+        userId = user.id;
+      } catch (error) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+    }
+    
     if (!userId) {
       return res.status(401).json({ error: "User not authenticated" });
     }
@@ -131,7 +155,18 @@ router.get("/api/google-fit/callback", async (req: Request, res: Response) => {
  */
 router.post("/api/google-fit/sync", async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    let userId = (req as any).user?.id;
+    
+    // 如果中间件没有设置用户，尝试直接认证
+    if (!userId) {
+      try {
+        const user = await sdk.authenticateRequest(req);
+        userId = user.id;
+      } catch (error) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+    }
+    
     if (!userId) {
       return res.status(401).json({ error: "User not authenticated" });
     }
@@ -164,7 +199,18 @@ router.post("/api/google-fit/sync", async (req: Request, res: Response) => {
  */
 router.get("/api/google-fit/status", async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    let userId = (req as any).user?.id;
+    
+    // 如果中间件没有设置用户，尝试直接认证
+    if (!userId) {
+      try {
+        const user = await sdk.authenticateRequest(req);
+        userId = user.id;
+      } catch (error) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+    }
+    
     if (!userId) {
       return res.status(401).json({ error: "User not authenticated" });
     }
