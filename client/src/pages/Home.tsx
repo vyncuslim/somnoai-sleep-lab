@@ -1,7 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { trpc } from "@/lib/trpc";
-import { getLoginUrl } from "@/const";
+import { Button } from "@/components/ui/button";
 import { 
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell
@@ -10,421 +8,238 @@ import { Heart, Moon, Zap, TrendingUp, Calendar, Settings, LogOut, Footprints, F
 import { useState } from "react";
 import { Link } from "wouter";
 import { GoogleFitSync } from "@/components/GoogleFitSync";
-import { useAuth } from "@/_core/hooks/useAuth";
+import { useGuestMode } from "@/App";
+
+// 示例数据
+const sleepData = [
+  { date: "周一", duration: 7.5, quality: 85 },
+  { date: "周二", duration: 6.8, quality: 78 },
+  { date: "周三", duration: 8.2, quality: 92 },
+  { date: "周四", duration: 7.1, quality: 82 },
+  { date: "周五", duration: 6.5, quality: 72 },
+  { date: "周六", duration: 9.0, quality: 95 },
+  { date: "周日", duration: 8.0, quality: 88 },
+];
+
+const sleepStages = [
+  { name: "浅睡眠", value: 30, color: "#3b82f6" },
+  { name: "深睡眠", value: 45, color: "#8b5cf6" },
+  { name: "REM睡眠", value: 25, color: "#ec4899" },
+];
+
+const heartRateData = [
+  { time: "22:00", rate: 72 },
+  { time: "23:00", rate: 68 },
+  { time: "00:00", rate: 62 },
+  { time: "01:00", rate: 58 },
+  { time: "02:00", rate: 56 },
+  { time: "03:00", rate: 55 },
+  { time: "04:00", rate: 58 },
+  { time: "05:00", rate: 65 },
+  { time: "06:00", rate: 72 },
+  { time: "07:00", rate: 78 },
+];
 
 export default function Home() {
-  const { user, loading, isAuthenticated, logout } = useAuth();
+  const { isGuest, setIsGuest } = useGuestMode();
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  // Query today's sleep data
-  const { data: todaySleep } = trpc.sleep.getToday.useQuery();
-  const { data: todayHeartRate } = trpc.heartRate.getToday.useQuery();
-
-  // Google Fit sync handler
-  const handleGoogleFitSync = () => {
-    // 刷新数据
-    window.location.reload();
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-white text-xl">加载中...</div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
+  if (!isGuest) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-6">
-        <div className="text-center">
-          <h1 className="text-5xl font-bold text-white mb-4 gradient-text">SomnoAI</h1>
-          <p className="text-xl text-gray-300 mb-8">数字化睡眠实验室</p>
-          <p className="text-gray-400 mb-8 max-w-md">
+        <div className="text-center max-w-md">
+          <div className="mb-8">
+            <Moon className="w-16 h-16 mx-auto text-indigo-400 mb-4" />
+            <h1 className="text-4xl font-black text-white mb-2 tracking-tight">SomnoAI</h1>
+            <p className="text-slate-400 text-sm">数字化睡眠实验室</p>
+          </div>
+          <p className="text-slate-300 mb-8">
             通过 AI 深度洞察和健康建议，帮助您科学管理睡眠质量
           </p>
-          <a href={getLoginUrl()}>
-            <Button className="bg-gradient-to-r from-cyan-400 to-blue-500 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-cyan-500/50">
-              登录/注册
-            </Button>
-          </a>
+          <Button 
+            onClick={() => setIsGuest(true)}
+            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-6 rounded-lg font-black text-base uppercase tracking-widest transition-all active:scale-95"
+          >
+            进入应用
+          </Button>
         </div>
       </div>
     );
   }
 
-  // Mock data for visualization
-  const sleepScore = Number(todaySleep?.sleepScore) || 78;
-  const totalDuration = Number(todaySleep?.totalDuration) || 480;
-  const deepSleep = Number(todaySleep?.deepSleepDuration) || 120;
-  const remSleep = Number(todaySleep?.remDuration) || 150;
-  const lightSleep = Number(todaySleep?.lightSleepDuration) || 180;
-  const awake = Number(todaySleep?.awakeDuration) || 30;
-  const steps = 8234;
-  const calories = 2150;
-
-  const sleepStages = [
-    { name: "深睡", value: deepSleep, color: "#0891b2" },
-    { name: "REM", value: remSleep, color: "#06b6d4" },
-    { name: "浅睡", value: lightSleep, color: "#22d3ee" },
-    { name: "清醒", value: awake, color: "#a5f3fc" },
-  ];
-
-  const weeklyData = [
-    { day: "周一", score: 72 },
-    { day: "周二", score: 75 },
-    { day: "周三", score: 68 },
-    { day: "周四", score: 82 },
-    { day: "周五", score: 78 },
-    { day: "周六", score: 85 },
-    { day: "周日", score: 80 },
-  ];
-
-  const heartRateStats = {
-    average: Number(todayHeartRate?.averageHeartRate) || 65,
-    min: Number(todayHeartRate?.minHeartRate) || 55,
-    max: Number(todayHeartRate?.maxHeartRate) || 85,
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8 animate-fade-in-down">
-          <div>
-            <h1 className="text-4xl font-bold text-white mb-2">欢迎回来，{user?.name || "用户"}</h1>
-            <p className="text-gray-400">
-              {new Date().toLocaleDateString("zh-CN", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur border-b border-white/10">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Moon className="w-6 h-6 text-indigo-400" />
+            <h1 className="text-xl font-black tracking-tight">SomnoAI</h1>
           </div>
-          <div className="flex gap-3">
-            <Link href="/calendar">
-              <Button variant="ghost" className="text-cyan-400 hover:bg-cyan-400/10">
-                <Calendar className="w-5 h-5 mr-2" />
-                日历
-              </Button>
+          <nav className="hidden md:flex items-center gap-6">
+            <Link href="/calendar" className="text-slate-400 hover:text-white transition">
+              日历
             </Link>
-            <Link href="/sleep-goals">
-              <Button variant="ghost" className="text-cyan-400 hover:bg-cyan-400/10">
-                <TrendingUp className="w-5 h-5 mr-2" />
-                目标
-              </Button>
+            <Link href="/trend-analysis" className="text-slate-400 hover:text-white transition">
+              趋势
             </Link>
-            <Link href="/settings">
-              <Button variant="ghost" className="text-cyan-400 hover:bg-cyan-400/10">
-                <Settings className="w-5 h-5 mr-2" />
-                设置
-              </Button>
+            <Link href="/ai-assistant" className="text-slate-400 hover:text-white transition">
+              AI 助手
             </Link>
-            <Button
-              onClick={() => logout()}
-              variant="ghost"
-              className="text-red-400 hover:bg-red-400/10"
-            >
-              <LogOut className="w-5 h-5 mr-2" />
-              登出
-            </Button>
-          </div>
+            <Link href="/settings" className="text-slate-400 hover:text-white transition">
+              设置
+            </Link>
+          </nav>
+          <Button 
+            onClick={() => setIsGuest(false)}
+            variant="ghost"
+            className="text-slate-400 hover:text-white"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            退出
+          </Button>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-black mb-2">欢迎回来</h2>
+          <p className="text-slate-400">今天是 {new Date().toLocaleDateString('zh-CN', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
         </div>
 
-        {/* Sleep Score Ring */}
+        {/* Google Fit Sync */}
+        <div className="mb-8">
+          <GoogleFitSync />
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <Card className="bg-slate-800/50 border-slate-700 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-400 text-sm">睡眠时长</p>
+                <p className="text-3xl font-black text-white mt-2">8h 2m</p>
+              </div>
+              <Moon className="w-8 h-8 text-blue-400" />
+            </div>
+          </Card>
+          <Card className="bg-slate-800/50 border-slate-700 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-400 text-sm">睡眠质量</p>
+                <p className="text-3xl font-black text-white mt-2">88%</p>
+              </div>
+              <TrendingUp className="w-8 h-8 text-green-400" />
+            </div>
+          </Card>
+          <Card className="bg-slate-800/50 border-slate-700 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-400 text-sm">平均心率</p>
+                <p className="text-3xl font-black text-white mt-2">64 bpm</p>
+              </div>
+              <Heart className="w-8 h-8 text-red-400" />
+            </div>
+          </Card>
+          <Card className="bg-slate-800/50 border-slate-700 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-400 text-sm">深睡眠</p>
+                <p className="text-3xl font-black text-white mt-2">45%</p>
+              </div>
+              <Zap className="w-8 h-8 text-yellow-400" />
+            </div>
+          </Card>
+        </div>
+
+        {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <Card className="glassmorphism p-8 col-span-1 flex flex-col items-center justify-center animate-fade-in-up">
-            <div className="relative w-48 h-48 mb-4">
-              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="90"
-                  fill="none"
-                  stroke="rgba(255,255,255,0.1)"
-                  strokeWidth="8"
-                />
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="90"
-                  fill="none"
-                  stroke="url(#gradient)"
-                  strokeWidth="8"
-                  strokeDasharray={`${(sleepScore / 100) * 565.48} 565.48`}
-                  strokeLinecap="round"
-                />
-                <defs>
-                  <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#06b6d4" />
-                    <stop offset="100%" stopColor="#0891b2" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-5xl font-bold text-cyan-400">{sleepScore}</div>
-                  <div className="text-gray-400 text-sm">睡眠评分</div>
-                </div>
-              </div>
-            </div>
-            <p className="text-gray-300 text-center">
-              {Number(sleepScore) >= 80
-                ? "优秀的睡眠质量！"
-                : Number(sleepScore) >= 60
-                ? "睡眠质量良好"
-                : "需要改善睡眠"}
-            </p>
+          {/* Sleep Duration Chart */}
+          <Card className="bg-slate-800/50 border-slate-700 p-6 lg:col-span-2">
+            <h3 className="text-lg font-black mb-4">本周睡眠数据</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={sleepData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <XAxis dataKey="date" stroke="#94a3b8" />
+                <YAxis stroke="#94a3b8" />
+                <Tooltip contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #475569" }} />
+                <Bar dataKey="duration" fill="#3b82f6" name="睡眠时长(小时)" />
+              </BarChart>
+            </ResponsiveContainer>
           </Card>
 
-          {/* Key Metrics */}
-          <div className="col-span-1 lg:col-span-2 grid grid-cols-2 gap-4">
-            <Card className="glassmorphism p-6 animate-fade-in-up">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-gray-300 text-sm font-semibold">总睡眠时长</h3>
-                <Moon className="w-5 h-5 text-cyan-400" />
-              </div>
-              <div className="text-3xl font-bold text-white">
-                {Math.floor(totalDuration / 60)}h {totalDuration % 60}m
-              </div>
-              <p className="text-xs text-gray-400 mt-2">目标: 8小时</p>
-            </Card>
-
-            <Card className="glassmorphism p-6 animate-fade-in-up">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-gray-300 text-sm font-semibold">深睡比例</h3>
-                <Zap className="w-5 h-5 text-amber-400" />
-              </div>
-              <div className="text-3xl font-bold text-white">
-                {Math.round((deepSleep / totalDuration) * 100)}%
-              </div>
-              <p className="text-xs text-gray-400 mt-2">目标: 15-20%</p>
-            </Card>
-
-            <Card className="glassmorphism p-6 animate-fade-in-up">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-gray-300 text-sm font-semibold">REM 比例</h3>
-                <TrendingUp className="w-5 h-5 text-purple-400" />
-              </div>
-              <div className="text-3xl font-bold text-white">
-                {Math.round((remSleep / totalDuration) * 100)}%
-              </div>
-              <p className="text-xs text-gray-400 mt-2">目标: 20-25%</p>
-            </Card>
-
-            <Card className="glassmorphism p-6 animate-fade-in-up">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-gray-300 text-sm font-semibold">睡眠效率</h3>
-                <Heart className="w-5 h-5 text-red-400" />
-              </div>
-              <div className="text-3xl font-bold text-white">
-                {todaySleep?.sleepEfficiency || 85}%
-              </div>
-              <p className="text-xs text-gray-400 mt-2">目标: 85%+</p>
-            </Card>
-          </div>
-        </div>
-
-        {/* Steps & Calories */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <Card className="glassmorphism p-6 animate-fade-in-up">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold">今日步数</h3>
-              <Footprints className="w-6 h-6 text-green-400" />
-            </div>
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-end justify-between mb-2">
-                  <span className="text-4xl font-bold text-green-400">{steps.toLocaleString()}</span>
-                  <span className="text-gray-400 text-sm">步</span>
-                </div>
-                <div className="w-full bg-white/10 rounded-full h-2">
-                  <div
-                    className="bg-gradient-to-r from-green-400 to-emerald-500 h-2 rounded-full"
-                    style={{ width: `${Math.min((steps / 10000) * 100, 100)}%` }}
-                  />
-                </div>
-                <p className="text-xs text-gray-400 mt-2">目标: 10,000 步</p>
-              </div>
-              <div className="p-3 bg-green-400/10 border border-green-400/20 rounded-lg">
-                <p className="text-green-300 text-sm">
-                  🎯 您已完成每日目标的 {Math.round((steps / 10000) * 100)}%
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="glassmorphism p-6 animate-fade-in-up">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold">今日卡路里</h3>
-              <Flame className="w-6 h-6 text-orange-400" />
-            </div>
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-end justify-between mb-2">
-                  <span className="text-4xl font-bold text-orange-400">{calories}</span>
-                  <span className="text-gray-400 text-sm">kcal</span>
-                </div>
-                <div className="w-full bg-white/10 rounded-full h-2">
-                  <div
-                    className="bg-gradient-to-r from-orange-400 to-red-500 h-2 rounded-full"
-                    style={{ width: `${Math.min((calories / 2500) * 100, 100)}%` }}
-                  />
-                </div>
-                <p className="text-xs text-gray-400 mt-2">建议: 2,500 kcal</p>
-              </div>
-              <div className="p-3 bg-orange-400/10 border border-orange-400/20 rounded-lg">
-                <p className="text-orange-300 text-sm">
-                  💪 您已消耗 {Math.round((calories / 2500) * 100)}% 的建议卡路里
-                </p>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* Sleep Stages & Heart Rate */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Sleep Stages */}
-          <Card className="glassmorphism p-6 animate-fade-in-up">
-            <h3 className="text-white font-semibold mb-4">睡眠阶段分布</h3>
+          {/* Sleep Stages Pie Chart */}
+          <Card className="bg-slate-800/50 border-slate-700 p-6">
+            <h3 className="text-lg font-black mb-4">睡眠阶段</h3>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
                   data={sleepStages}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={2}
+                  labelLine={false}
+                  label={({ name, value }) => `${name} ${value}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
                   dataKey="value"
                 >
                   {sleepStages.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip
-                  formatter={(value) => `${value}分钟`}
-                  contentStyle={{
-                    backgroundColor: "rgba(15, 23, 42, 0.9)",
-                    border: "1px solid rgba(6, 182, 212, 0.3)",
-                    borderRadius: "8px",
-                  }}
-                />
               </PieChart>
             </ResponsiveContainer>
-            <div className="grid grid-cols-2 gap-2 mt-4">
-              {sleepStages.map((stage) => (
-                <div key={stage.name} className="flex items-center gap-2">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: stage.color }}
-                  />
-                  <span className="text-xs text-gray-300">
-                    {stage.name}: {stage.value}分钟
-                  </span>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          {/* Heart Rate */}
-          <Card className="glassmorphism p-6 animate-fade-in-up">
-            <h3 className="text-white font-semibold mb-4">心率监测</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-300">平均心率</span>
-                <span className="text-2xl font-bold text-cyan-400">
-                  {heartRateStats.average} BPM
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-300">最低心率</span>
-                <span className="text-2xl font-bold text-blue-400">
-                  {heartRateStats.min} BPM
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-300">最高心率</span>
-                <span className="text-2xl font-bold text-red-400">
-                  {heartRateStats.max} BPM
-                </span>
-              </div>
-              <div className="mt-6 p-4 bg-white/5 rounded-lg border border-white/10">
-                <p className="text-sm text-gray-300">
-                  💡 <strong>健康提示：</strong> 您的心率在正常范围内。保持规律运动和充足睡眠可以进一步改善心率水平。
-                </p>
-              </div>
-            </div>
           </Card>
         </div>
 
-        {/* Weekly Trend */}
-        <Card className="glassmorphism p-6 mb-8 animate-fade-in-up">
-          <h3 className="text-white font-semibold mb-4">本周睡眠评分趋势</h3>
+        {/* Heart Rate Chart */}
+        <Card className="bg-slate-800/50 border-slate-700 p-6 mb-8">
+          <h3 className="text-lg font-black mb-4">心率变化</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-              <XAxis dataKey="day" stroke="rgba(255,255,255,0.5)" />
-              <YAxis stroke="rgba(255,255,255,0.5)" domain={[0, 100]} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "rgba(15, 23, 42, 0.9)",
-                  border: "1px solid rgba(6, 182, 212, 0.3)",
-                  borderRadius: "8px",
-                }}
+            <LineChart data={heartRateData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <XAxis dataKey="time" stroke="#94a3b8" />
+              <YAxis stroke="#94a3b8" />
+              <Tooltip contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #475569" }} />
+              <Line 
+                type="monotone" 
+                dataKey="rate" 
+                stroke="#ec4899" 
+                dot={false}
+                strokeWidth={2}
+                name="心率(bpm)"
               />
-              <Bar dataKey="score" fill="#06b6d4" radius={[8, 8, 0, 0]} />
-            </BarChart>
+            </LineChart>
           </ResponsiveContainer>
         </Card>
 
-        {/* Google Fit Integration */}
-        <Card className="glassmorphism p-6 mb-8 animate-fade-in-up">
-          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-            <span>🔗</span> Google Fit 同步
-          </h3>
-          <GoogleFitSync userId={user?.id || 0} onSync={handleGoogleFitSync} />
-        </Card>
-
         {/* AI Insights */}
-        <Card className="glassmorphism p-6 animate-fade-in-up">
-          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-            <span>🤖</span> AI 睡眠洞察
+        <Card className="bg-slate-800/50 border-slate-700 p-6">
+          <h3 className="text-lg font-black mb-4 flex items-center gap-2">
+            <Zap className="w-5 h-5 text-yellow-400" />
+            AI 睡眠分析
           </h3>
-          <div className="space-y-3">
-            <div className="p-4 bg-cyan-400/10 border border-cyan-400/20 rounded-lg">
-              <p className="text-cyan-300 text-sm">
-                ✨ 您最近的睡眠质量有所提升。建议继续保持规律的睡眠时间表。
+          <div className="space-y-4">
+            <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700">
+              <p className="text-sm text-slate-300">
+                根据您最近的睡眠数据，您的睡眠质量处于良好水平。建议继续保持规律的睡眠时间，特别是在周末时不要睡得太晚。
               </p>
             </div>
-            <div className="p-4 bg-blue-400/10 border border-blue-400/20 rounded-lg">
-              <p className="text-blue-300 text-sm">
-                💡 您的深睡时间略低于目标。尝试在睡前30分钟放松，可能有助于改善深睡质量。
+            <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700">
+              <p className="text-sm text-slate-300">
+                您的深睡眠比例（45%）略低于理想水平（50%）。建议增加运动量和减少屏幕时间，特别是在睡前 1 小时。
               </p>
             </div>
-            <div className="p-4 bg-purple-400/10 border border-purple-400/20 rounded-lg">
-              <p className="text-purple-300 text-sm">
-                🎯 您的心率在睡眠期间保持稳定。这表明您的睡眠环境相当舒适。
+            <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700">
+              <p className="text-sm text-slate-300">
+                您的平均心率在睡眠中保持稳定，这表明您的睡眠环境和压力水平都很好。继续保持这个状态！
               </p>
             </div>
           </div>
         </Card>
-
-        {/* Footer with Privacy Policy and Terms */}
-        <div className="mt-12 pt-8 border-t border-white/10 text-center text-sm text-gray-400 space-y-2">
-          <p>2025 SomnoAI Digital Sleep Lab. All rights reserved.</p>
-          <div className="flex justify-center gap-4">
-            <Link href="/privacypolicy">
-              <span className="text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer">隐私权政策</span>
-            </Link>
-            <span>|</span>
-            <Link href="/termsofservice">
-              <span className="text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer">服务条款</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -20,15 +20,17 @@ export const appRouter = router({
 
   // Notifications router
   notifications: router({
-    list: protectedProcedure
+    list: publicProcedure
       .input(z.object({ limit: z.number().default(50) }).optional())
       .query(async ({ ctx, input }) => {
-        return await db.getUserNotifications(ctx.user.id, input?.limit || 50);
+        const userId = 1; // Default guest user
+        return await db.getUserNotifications(userId, input?.limit || 50);
       }),
-    unread: protectedProcedure.query(async ({ ctx }) => {
-      return await db.getUnreadNotifications(ctx.user.id);
+    unread: publicProcedure.query(async ({ ctx }) => {
+      const userId = 1; // Default guest user
+      return await db.getUnreadNotifications(userId);
     }),
-    create: protectedProcedure
+    create: publicProcedure
       .input(z.object({
         title: z.string(),
         content: z.string().optional(),
@@ -36,22 +38,24 @@ export const appRouter = router({
         actionUrl: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
+        const userId = 1; // Default guest user
         return await db.createNotification({
-          userId: ctx.user.id,
+          userId,
           ...input,
         });
       }),
-    markAsRead: protectedProcedure
+    markAsRead: publicProcedure
       .input(z.object({ notificationId: z.number() }))
       .mutation(async ({ input }) => {
         await db.markNotificationAsRead(input.notificationId);
         return { success: true };
       }),
-    markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
-      await db.markAllNotificationsAsRead(ctx.user.id);
+    markAllAsRead: publicProcedure.mutation(async ({ ctx }) => {
+      const userId = 1; // Default guest user
+      await db.markAllNotificationsAsRead(userId);
       return { success: true };
     }),
-    delete: protectedProcedure
+    delete: publicProcedure
       .input(z.object({ notificationId: z.number() }))
       .mutation(async ({ input }) => {
         await db.deleteNotification(input.notificationId);
@@ -61,17 +65,18 @@ export const appRouter = router({
 
   // Sleep Records router
   sleep: router({
-    getRecords: protectedProcedure
+    getRecords: publicProcedure
       .input(z.object({ limit: z.number().default(30) }).optional())
       .query(async ({ ctx, input }) => {
         // 返回用户最近的睡眠记录
+        const userId = 1; // Default guest user
         const endDate = new Date();
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - (input?.limit || 30));
-        const records = await db.getSleepRecordsByDateRange(ctx.user.id, startDate, endDate);
+        const records = await db.getSleepRecordsByDateRange(userId, startDate, endDate);
         return records || [];
       }),
-    createManualRecord: protectedProcedure
+    createManualRecord: publicProcedure
       .input(z.object({
         recordDate: z.date(),
         totalDuration: z.number(),
@@ -87,8 +92,9 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         // 创建睡眠记录
+        const userId = 1; // Default guest user
         const sleepRecord = await db.createSleepRecord({
-          userId: ctx.user.id,
+          userId,
           recordDate: input.recordDate,
           totalDuration: input.totalDuration,
           sleepScore: input.qualityScore,
@@ -102,7 +108,7 @@ export const appRouter = router({
 
         // 创建心率记录
         await db.createHeartRateData({
-          userId: ctx.user.id,
+          userId,
           recordDate: input.recordDate,
           averageHeartRate: input.averageHeartRate,
           minHeartRate: input.minHeartRate,
@@ -112,14 +118,15 @@ export const appRouter = router({
 
         return sleepRecord;
       }),
-    getToday: protectedProcedure.query(async ({ ctx }) => {
+    getToday: publicProcedure.query(async ({ ctx }) => {
+      const userId = 1; // Default guest user
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const record = await db.getSleepRecord(ctx.user.id, today);
+      const record = await db.getSleepRecord(userId, today);
       if (!record) {
         return {
           id: 0,
-          userId: ctx.user.id,
+          userId,
           recordDate: today,
           sleepScore: 0,
           totalDuration: 0,
@@ -135,15 +142,16 @@ export const appRouter = router({
       }
       return record;
     }),
-    getByDateRange: protectedProcedure
+    getByDateRange: publicProcedure
       .input(z.object({
         startDate: z.date(),
         endDate: z.date(),
       }))
       .query(async ({ ctx, input }) => {
-        return await db.getSleepRecordsByDateRange(ctx.user.id, input.startDate, input.endDate);
+        const userId = 1; // Default guest user
+        return await db.getSleepRecordsByDateRange(userId, input.startDate, input.endDate);
       }),
-    create: protectedProcedure
+    create: publicProcedure
       .input(z.object({
         recordDate: z.date(),
         sleepScore: z.number().optional(),
@@ -160,8 +168,9 @@ export const appRouter = router({
         notes: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
+        const userId = 1; // Default guest user
         return await db.createSleepRecord({
-          userId: ctx.user.id,
+          userId,
           source: "manual",
           ...input,
         });
@@ -170,7 +179,7 @@ export const appRouter = router({
 
   // AI Chat router
   ai: router({
-    chat: protectedProcedure
+    chat: publicProcedure
       .input(z.object({
         message: z.string(),
         context: z.string().optional(),
@@ -222,14 +231,15 @@ Please provide professional advice based on the data and user question.`;
 
   // Heart Rate router
   heartRate: router({
-    getToday: protectedProcedure.query(async ({ ctx }) => {
+    getToday: publicProcedure.query(async ({ ctx }) => {
+      const userId = 1; // Default guest user
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const record = await db.getHeartRateData(ctx.user.id, today);
+      const record = await db.getHeartRateData(userId, today);
       if (!record) {
         return {
           id: 0,
-          userId: ctx.user.id,
+          userId: 1,
           recordDate: today,
           averageHeartRate: 0,
           minHeartRate: 0,
@@ -242,15 +252,16 @@ Please provide professional advice based on the data and user question.`;
       }
       return record;
     }),
-    getByDateRange: protectedProcedure
+    getByDateRange: publicProcedure
       .input(z.object({
         startDate: z.date(),
         endDate: z.date(),
       }))
       .query(async ({ ctx, input }) => {
-        return await db.getHeartRateDataByDateRange(ctx.user.id, input.startDate, input.endDate);
+        const userId = 1; // Default guest user
+        return await db.getHeartRateDataByDateRange(userId, input.startDate, input.endDate);
       }),
-    create: protectedProcedure
+    create: publicProcedure
       .input(z.object({
         recordDate: z.date(),
         averageHeartRate: z.number().optional(),
@@ -259,8 +270,9 @@ Please provide professional advice based on the data and user question.`;
         restingHeartRate: z.number().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
+        const userId = 1; // Default guest user
         return await db.createHeartRateData({
-          userId: ctx.user.id,
+          userId,
           source: "manual",
           ...input,
         });
@@ -269,28 +281,31 @@ Please provide professional advice based on the data and user question.`;
 
   // AI Chat History router
   chatHistory: router({
-    save: protectedProcedure
+    save: publicProcedure
       .input(z.object({
         role: z.enum(["user", "assistant"]),
         message: z.string(),
         context: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        return await db.saveAIChatMessage(ctx.user.id, input.role, input.message, input.context);
+        const userId = 1; // Default guest user
+        return await db.saveAIChatMessage(userId, input.role, input.message, input.context);
       }),
-    getHistory: protectedProcedure
+    getHistory: publicProcedure
       .input(z.object({ limit: z.number().default(50) }).optional())
       .query(async ({ ctx, input }) => {
-        return await db.getAIChatHistory(ctx.user.id, input?.limit || 50);
+        const userId = 1; // Default guest user
+        return await db.getAIChatHistory(userId, input?.limit || 50);
       }),
   }),
 
   // Google Fit Integration router
   googleFit: router({
-    getAuthUrl: protectedProcedure.query(async ({ ctx }) => {
+    getAuthUrl: publicProcedure.query(async ({ ctx }) => {
       try {
         // 获取用户的 Google Fit 集成状态
-        const integration = await db.getGoogleFitIntegration(ctx.user.id);
+        const userId = 1; // Default guest user
+        const integration = await db.getGoogleFitIntegration(userId);
         if (integration && integration.accessToken) {
           return { connected: true, message: "Already connected" };
         }
@@ -313,9 +328,10 @@ Please provide professional advice based on the data and user question.`;
         throw new Error("Failed to get Google Fit auth URL");
       }
     }),
-    getStatus: protectedProcedure.query(async ({ ctx }) => {
+    getStatus: publicProcedure.query(async ({ ctx }) => {
       try {
-        const integration = await db.getGoogleFitIntegration(ctx.user.id);
+        const userId = 1; // Default guest user
+        const integration = await db.getGoogleFitIntegration(userId);
         return {
           connected: !!integration && !!integration.accessToken,
           lastSync: integration?.lastSyncAt || null,
@@ -329,10 +345,11 @@ Please provide professional advice based on the data and user question.`;
 
   // Sleep Goals router
   sleepGoals: router({
-    get: protectedProcedure.query(async ({ ctx }) => {
-      return await db.getUserSleepGoal(ctx.user.id);
+    get: publicProcedure.query(async ({ ctx }) => {
+      const userId = 1; // Default guest user
+      return await db.getUserSleepGoal(userId);
     }),
-    create: protectedProcedure
+    create: publicProcedure
       .input(z.object({
         targetSleepDuration: z.number().optional(),
         targetDeepSleepPercentage: z.number().optional(),
@@ -341,16 +358,17 @@ Please provide professional advice based on the data and user question.`;
         notifyWhenMissed: z.number().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const existingGoal = await db.getUserSleepGoal(ctx.user.id);
+        const userId = 1; // Default guest user
+        const existingGoal = await db.getUserSleepGoal(userId);
         if (existingGoal) {
-          return await db.updateSleepGoal(ctx.user.id, input);
+          return await db.updateSleepGoal(userId, input);
         }
         return await db.createSleepGoal({
-          userId: ctx.user.id,
+          userId,
           ...input,
         });
       }),
-    update: protectedProcedure
+    update: publicProcedure
       .input(z.object({
         targetSleepDuration: z.number().optional(),
         targetDeepSleepPercentage: z.number().optional(),
@@ -359,7 +377,8 @@ Please provide professional advice based on the data and user question.`;
         notifyWhenMissed: z.number().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        return await db.updateSleepGoal(ctx.user.id, input);
+        const userId = 1; // Default guest user
+        return await db.updateSleepGoal(userId, input);
       }),
   }),
 });
