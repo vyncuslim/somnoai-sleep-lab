@@ -218,3 +218,35 @@
 - [ ] 测试 token 刷新機制
 - [ ] 测试数据删除機制
 - [ ] 测试错误处理（API 失败、权限不足等）
+
+
+## 新增功能 - Token 过期时间显示和手动刷新
+
+### 后端 API
+- [x] 创建 /api/trpc/googleFit.getTokenStatus 端点获取 Token 过期时间
+- [x] 创建 /api/trpc/googleFit.refreshToken 端点手动刷新 Token
+- [x] 返回 Token 过期时间、距离过期的时间、刷新状态等信息
+
+### 前端组件
+- [x] 创建 GoogleFitTokenStatus 组件显示 Token 状态
+- [x] 显示 Token 过期时间（格式化为可读时间）
+- [x] 显示距离过期的剩余时间（如"2 天后过期"）
+- [x] 显示 Token 状态指示器（绿色=有效、黄色=即将过期、红色=已过期）
+- [x] 添加手动刷新按黮u，点击后刷新 Token
+- [x] 显示刷新状态（正在刷新、刷新成功、刷新失败）
+
+### 仪表板集成
+- [x] 在仪表板的 Google Fit 部分添加 Token 状态显示
+- [ ] 在用户设置中添加 Google Fit 连接状态和 Token 管理
+- [ ] 添加"撤销 Google Fit 访问权限"按黮u
+
+### 测试
+- [x] 编写单元测试验证 Token 状态获取
+- [x] 编写单元测试验证 Token 刷新逻辑
+- [x] 测试 Token 过期时间计算
+- [x] 测试错误处理（刷新失败、网络错误等）
+
+## Bug 修复 - CDN 加载问题
+- [ ] 诊断 https://files.manuscdn.com/manus-space-dispatcher/spaceEditor-uWiuPT8S.js 加载失败
+- [ ] 检查网络连接和 CDN 可用性
+- [ ] 实现 CDN 加载失败的降级方案

@@ -8,6 +8,7 @@ import { Heart, Moon, Zap, TrendingUp, Calendar, Settings, LogOut, Footprints, F
 import { useState } from "react";
 import { Link } from "wouter";
 import { GoogleFitSync } from "@/components/GoogleFitSync";
+import { GoogleFitTokenStatus } from "@/components/GoogleFitTokenStatus";
 import { useGuestMode } from "@/App";
 
 // 示例数据
@@ -110,8 +111,9 @@ export default function Home() {
         </div>
 
         {/* Google Fit Sync */}
-        <div className="mb-8">
+        <div className="mb-8 space-y-4">
           <GoogleFitSync />
+          <GoogleFitTokenStatus />
         </div>
 
         {/* Stats Grid */}

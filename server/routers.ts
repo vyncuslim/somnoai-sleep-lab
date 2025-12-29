@@ -359,6 +359,85 @@ Please provide professional advice based on the data and user question.`;
         throw new Error("Failed to get Google Fit status");
       }
     }),
+    getTokenStatus: publicProcedure.query(async ({ ctx }) => {
+      try {
+        const userId = 1;
+        const integration = await db.getGoogleFitIntegration(userId);
+        
+        if (!integration || !integration.accessToken) {
+          return {
+            connected: false,
+            tokenExpiry: null,
+            isExpired: false,
+            isExpiringSoon: false,
+            hoursUntilExpiry: null,
+            lastRefreshTime: null,
+          };
+        }
+
+        const now = new Date();
+        const tokenExpiry = integration.tokenExpiry || new Date();
+        const isExpired = now >= tokenExpiry;
+        const hoursUntilExpiry = Math.max(0, (tokenExpiry.getTime() - now.getTime()) / (1000 * 60 * 60));
+        const isExpiringSoon = hoursUntilExpiry < 24;
+
+        return {
+          connected: true,
+          tokenExpiry,
+          isExpired,
+          isExpiringSoon,
+          hoursUntilExpiry: Math.round(hoursUntilExpiry * 10) / 10,
+          lastRefreshTime: integration.lastSyncAt,
+        };
+      } catch (error) {
+        console.error("Failed to get token status:", error);
+        throw new Error("Failed to get token status");
+      }
+    }),
+    refreshToken: publicProcedure.mutation(async ({ ctx }) => {
+      try {
+        const userId = 1;
+        const integration = await db.getGoogleFitIntegration(userId);
+        
+        if (!integration || !integration.refreshToken) {
+          throw new Error("No refresh token available");
+        }
+
+        const { refreshAccessToken } = await import("./googleFitTokenManager");
+        
+        const clientId = process.env.GOOGLE_CLIENT_ID;
+        const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+        
+        if (!clientId || !clientSecret) {
+          throw new Error("Google OAuth credentials not configured");
+        }
+
+        const result = await refreshAccessToken(
+          integration.refreshToken,
+          clientId,
+          clientSecret
+        );
+
+        if (!result) {
+          throw new Error("Failed to refresh token");
+        }
+
+        const newExpiresAt = new Date(Date.now() + result.expiresIn * 1000);
+        await db.updateGoogleFitIntegration(userId, {
+          tokenExpiry: newExpiresAt,
+          lastSyncAt: new Date(),
+        });
+
+        return {
+          success: true,
+          message: "Token refreshed successfully",
+          newExpiry: newExpiresAt,
+        };
+      } catch (error) {
+        console.error("Failed to refresh token:", error);
+        throw new Error(`Failed to refresh token: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }),
     getSyncHistory: publicProcedure
       .input(z.object({ limit: z.number().default(10) }).optional())
       .query(async ({ ctx, input }) => {
