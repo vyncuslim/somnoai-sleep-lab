@@ -25,8 +25,8 @@ let googleSDKStatus: GoogleSDKStatus = {
 };
 
 const DEFAULT_OPTIONS: GoogleSDKLoadOptions = {
-  maxRetries: 3,
-  timeout: 10000, // 10 秒超时
+  maxRetries: 5,
+  timeout: 15000,
 };
 
 /**
@@ -35,24 +35,21 @@ const DEFAULT_OPTIONS: GoogleSDKLoadOptions = {
 export async function loadGoogleSDK(options: GoogleSDKLoadOptions = {}): Promise<boolean> {
   const finalOptions = { ...DEFAULT_OPTIONS, ...options };
 
-  // 如果已经加载成功，直接返回
   if (googleSDKStatus.loaded) {
-    console.log("✓ Google SDK 已加载");
+    console.log("[Google SDK] Already loaded");
     options.onSuccess?.();
     return true;
   }
 
-  // 如果正在加载，等待
   if (googleSDKStatus.loading) {
-    console.log("⟳ Google SDK 正在加载...");
-    // 等待加载完成
+    console.log("[Google SDK] Loading in progress...");
     return new Promise((resolve) => {
       const checkInterval = setInterval(() => {
         if (googleSDKStatus.loaded) {
           clearInterval(checkInterval);
           options.onSuccess?.();
           resolve(true);
-        } else if (googleSDKStatus.error && googleSDKStatus.retryCount >= (finalOptions.maxRetries || 3)) {
+        } else if (googleSDKStatus.error && googleSDKStatus.retryCount >= (finalOptions.maxRetries || 5)) {
           clearInterval(checkInterval);
           options.onError?.(googleSDKStatus.error);
           resolve(false);
@@ -61,102 +58,103 @@ export async function loadGoogleSDK(options: GoogleSDKLoadOptions = {}): Promise
     });
   }
 
-  // 检查是否已经加载过（全局 window.google）
   if (window.google?.accounts?.id) {
-    console.log("✓ Google SDK 已在全局加载");
+    console.log("[Google SDK] Already loaded globally");
     googleSDKStatus.loaded = true;
     options.onSuccess?.();
     return true;
   }
 
-  // 开始加载
   googleSDKStatus.loading = true;
   googleSDKStatus.retryCount = 0;
 
   return new Promise((resolve) => {
     const attemptLoad = () => {
-      // 检查是否超过最大重试次数
-      if (googleSDKStatus.retryCount >= (finalOptions.maxRetries || 3)) {
+      if (googleSDKStatus.retryCount >= (finalOptions.maxRetries || 5)) {
         const error = new Error(
-          `Google SDK 加载失败，已重试 ${googleSDKStatus.retryCount} 次。` +
-          `可能的原因：1) 网络连接问题 2) Google 服务不可用 3) 浏览器扩展阻止 4) 隐私设置限制`
+          `Google SDK failed to load after ${googleSDKStatus.retryCount} retries. ` +
+          `Possible reasons: 1) Network issue 2) Google service unavailable 3) Browser extension blocking 4) Privacy settings`
         );
         googleSDKStatus.error = error;
         googleSDKStatus.loading = false;
-        console.error("✗ Google SDK 加载失败:", error.message);
+        console.error("[Google SDK] Load failed:", error.message);
         options.onError?.(error);
         resolve(false);
         return;
       }
 
-      // 检查脚本是否已存在
       const existingScript = document.querySelector(
-        'script[src="https://accounts.google.com/gsi/client"]'
+        'script[src*="accounts.google.com/gsi/client"]'
       );
       if (existingScript) {
-        console.log("✓ Google SDK 脚本已存在");
-        // 等待脚本加载完成
+        console.log("[Google SDK] Script already exists, waiting for initialization...");
         const checkGoogleInterval = setInterval(() => {
           if (window.google?.accounts?.id) {
             clearInterval(checkGoogleInterval);
             googleSDKStatus.loaded = true;
             googleSDKStatus.loading = false;
             googleSDKStatus.error = null;
-            console.log("✓ Google SDK 已加载");
+            console.log("[Google SDK] Loaded successfully");
             options.onSuccess?.();
             resolve(true);
           }
         }, 100);
 
-        // 设置超时
         setTimeout(() => {
           clearInterval(checkGoogleInterval);
           if (!googleSDKStatus.loaded) {
             googleSDKStatus.retryCount++;
-            console.warn(`⚠ Google SDK 加载超时，重试 ${googleSDKStatus.retryCount}/${finalOptions.maxRetries}...`);
+            console.warn(`[Google SDK] Load timeout, retrying ${googleSDKStatus.retryCount}/${finalOptions.maxRetries}...`);
             attemptLoad();
           }
         }, finalOptions.timeout);
         return;
       }
 
-      // 创建并加载脚本
       const script = document.createElement("script");
       script.src = "https://accounts.google.com/gsi/client";
       script.async = true;
       script.defer = true;
+      script.crossOrigin = "anonymous";
 
-      // 设置加载超时
       const timeoutId = setTimeout(() => {
-        console.warn(`⚠ Google SDK 加载超时 (${finalOptions.timeout}ms)，重试 ${googleSDKStatus.retryCount + 1}/${finalOptions.maxRetries}...`);
+        console.warn(`[Google SDK] Load timeout (${finalOptions.timeout}ms), retrying ${googleSDKStatus.retryCount + 1}/${finalOptions.maxRetries}...`);
         googleSDKStatus.retryCount++;
-        attemptLoad();
+        script.remove();
+        setTimeout(() => {
+          attemptLoad();
+        }, 1000 * googleSDKStatus.retryCount);
       }, finalOptions.timeout);
 
       script.onload = () => {
         clearTimeout(timeoutId);
-        // 再等待一下确保 window.google 已准备好
         setTimeout(() => {
           if (window.google?.accounts?.id) {
             googleSDKStatus.loaded = true;
             googleSDKStatus.loading = false;
             googleSDKStatus.error = null;
-            console.log("✓ Google SDK 已加载");
+            console.log("[Google SDK] Loaded successfully");
             options.onSuccess?.();
             resolve(true);
           } else {
-            console.warn("⚠ Google SDK 脚本加载但 window.google 未定义，重试...");
+            console.warn("[Google SDK] Script loaded but window.google not defined, retrying...");
             googleSDKStatus.retryCount++;
-            attemptLoad();
+            script.remove();
+            setTimeout(() => {
+              attemptLoad();
+            }, 1000 * googleSDKStatus.retryCount);
           }
         }, 100);
       };
 
       script.onerror = () => {
         clearTimeout(timeoutId);
-        console.warn(`⚠ Google SDK 脚本加载失败，重试 ${googleSDKStatus.retryCount + 1}/${finalOptions.maxRetries}...`);
+        console.warn(`[Google SDK] Script load failed, retrying ${googleSDKStatus.retryCount + 1}/${finalOptions.maxRetries}...`);
         googleSDKStatus.retryCount++;
-        attemptLoad();
+        script.remove();
+        setTimeout(() => {
+          attemptLoad();
+        }, 1000 * googleSDKStatus.retryCount);
       };
 
       document.head.appendChild(script);
@@ -183,7 +181,7 @@ export function resetGoogleSDKStatus(): void {
     error: null,
     retryCount: 0,
   };
-  console.log("✓ Google SDK 状态已重置");
+  console.log("[Google SDK] Status reset");
 }
 
 /**
@@ -196,7 +194,7 @@ export function isGoogleSDKAvailable(): boolean {
 /**
  * 等待 Google SDK 加载完成
  */
-export function waitForGoogleSDK(timeout: number = 10000): Promise<boolean> {
+export function waitForGoogleSDK(timeout: number = 15000): Promise<boolean> {
   return new Promise((resolve) => {
     if (isGoogleSDKAvailable()) {
       resolve(true);
@@ -210,7 +208,7 @@ export function waitForGoogleSDK(timeout: number = 10000): Promise<boolean> {
         resolve(true);
       } else if (Date.now() - startTime > timeout) {
         clearInterval(checkInterval);
-        console.error("✗ 等待 Google SDK 加载超时");
+        console.error("[Google SDK] Wait timeout");
         resolve(false);
       }
     }, 100);

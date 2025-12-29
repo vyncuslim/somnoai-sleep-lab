@@ -256,3 +256,29 @@
 - [x] 修改 App.tsx 使其默认进入访客模式
 - [x] 用户无需登录即可使用应用
 - [x] 用户仍可在 Home 中选择退出访客模式
+
+
+## Bug 修复 - Google 登录 SDK 未加载
+
+### 问题描述
+- [x] Google 登录 SDK 未能正确加载
+- [x] 网络请求失败（Facebook、Google Ads 等第三方脚本）
+- [x] 用户无法使用 Google 登录功能
+
+### 根本原因分析
+- [x] 检查 Google SDK 脚本加载的 CORS 配置
+- [x] 验证 Google Cloud Console 中的凭据配置
+- [x] 检查网络连接和 CDN 可用性
+- [x] 分析 Content Security Policy (CSP) 是否阻止脚本加载
+
+### 解决方案
+- [x] 改进 Google SDK 加载机制，添加重试逻辑
+- [x] 实现更好的错误提示和恢复機制
+- [x] 添加 fallback 方案（如果 Google SDK 加载失败，提供邮箱登录选项）
+- [x] 优化脚本加载顺序和超时时间
+
+### 测试
+- [x] 测试 Google SDK 加载成功的情况
+- [x] 测试 Google SDK 加载失败的情况
+- [x] 测试网络中断后的恢复
+- [x] 测试 fallback 登录方案
