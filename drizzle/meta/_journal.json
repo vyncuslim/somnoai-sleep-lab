@@ -29,6 +29,13 @@
       "when": 1766940512628,
       "tag": "0003_flippant_zaran",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1766994272395,
+      "tag": "0004_natural_prowler",
+      "breakpoints": true
     }
   ]
 }

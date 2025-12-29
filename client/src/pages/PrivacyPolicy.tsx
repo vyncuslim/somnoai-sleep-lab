@@ -51,9 +51,9 @@ export default function PrivacyPolicy() {
               <div>
                 <h3 className="text-lg font-semibold text-gold-400 mb-2">2.2 从第三方收集的信息</h3>
                 <ul className="list-disc list-inside space-y-2 ml-4">
-                  <li>Google Fit：当您授权连接时，我们会收集您的睡眠段数据和心率数据</li>
-                  <li>Google 账户：当您使用 Google 登录时，我们会收集基本的账户信息</li>
-                  <li>分析服务：我们可能收集使用统计和应用性能数据</li>
+                  <li><strong>Google Fit 数据：</strong>当您授权连接时，我们会收集您的睡眠段数据、心率数据、活动数据和身体测量数据。这些数据仅用于改进您的睡眠分析和个性化建议。</li>
+                  <li><strong>Google 账户：</strong>当您使用 Google 登录时，我们会收集基本的账户信息（如电子邮件和姓名）</li>
+                  <li><strong>分析服务：</strong>我们可能收集使用统计和应用性能数据以改进服务</li>
                 </ul>
               </div>
 
@@ -78,7 +78,8 @@ export default function PrivacyPolicy() {
               <li>通信：发送服务通知、安全警报、更新和营销信息</li>
               <li>分析和研究：改进应用功能、进行用户行为分析</li>
               <li>法律合规：遵守法律要求、保护我们的权利</li>
-              <li>AI 分析：使用您的数据训练 AI 模型以提供更好的睡眠建议</li>
+              <li>AI 分析：使用您的数据（包括来自 Google Fit 的数据）生成个性化的睡眠建议和健康洞察</li>
+              <li>Google Fit 同步：自动或手动同步 Google Fit 数据到本应用，以提供更完整的睡眠分析</li>
             </ul>
           </section>
 
@@ -159,33 +160,79 @@ export default function PrivacyPolicy() {
             </p>
           </section>
 
-          {/* 9. 第三方链接 */}
+          {/* 9. Google Fit 数据处理 */}
           <section className="bg-black/30 backdrop-blur-md rounded-lg p-6 border border-cyan-500/20">
-            <h2 className="text-2xl font-bold text-cyan-400 mb-4">9. 第三方链接</h2>
+            <h2 className="text-2xl font-bold text-cyan-400 mb-4">9. Google Fit 数据处理</h2>
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gold-400 mb-2">9.1 数据授权</h3>
+                <p className="mb-2">
+                  当您选择连接 Google Fit 时，您需要授权本应用访问以下数据：
+                </p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li>睡眠段数据（睡眠时间、睡眠阶段）</li>
+                  <li>心率数据（平均、最低、最高心率）</li>
+                  <li>活动数据（步数、贡献活动）</li>
+                  <li>身体测量数据（体重、身体成分）</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gold-400 mb-2">9.2 数据使用限制</h3>
+                <p className="mb-2">
+                  本应用仅将 Google Fit 数据用于：
+                </p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li>改进睡眠分析和个性化建议</li>
+                  <li>提供健康洞察和 AI 帮助</li>
+                  <li>改进应用功能和用户体验</li>
+                  <li>符合法律要求</li>
+                </ul>
+                <p className="mt-2">
+                  本应用不会将 Google Fit 数据用于广告、数据消林或任何不相关的目的。
+                </p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gold-400 mb-2">9.3 数据安全</h3>
+                <p>
+                  我们会使用工业标准的加密技术来保护 Google Fit 数据。所有数据传输都通过 SSL/TLS 加密进行。
+                </p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gold-400 mb-2">9.4 断开连接</h3>
+                <p>
+                  您可以随时在应用设置中断开 Google Fit 连接。断开后，本应用将不再能访问您的 Google Fit 数据。但您之前同步的数据会保留在本应用中。
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* 10. 第三方链接 */}
+          <section className="bg-black/30 backdrop-blur-md rounded-lg p-6 border border-cyan-500/20">
+            <h2 className="text-2xl font-bold text-cyan-400 mb-4">10. 第三方链接</h2>
             <p>
               本应用可能包含指向第三方网站的链接。我们对这些网站的隐私政策或实践不负责。我们建议您在访问任何第三方网站时查看其隐私政策。
             </p>
           </section>
 
-          {/* 10. 儿童隐私 */}
+          {/* 11. 儿童隐私 */}
           <section className="bg-black/30 backdrop-blur-md rounded-lg p-6 border border-cyan-500/20">
-            <h2 className="text-2xl font-bold text-cyan-400 mb-4">10. 儿童隐私</h2>
+            <h2 className="text-2xl font-bold text-cyan-400 mb-4">11. 儿童隐私</h2>
             <p>
               本应用不针对 13 岁以下的儿童。我们不会有意收集 13 岁以下儿童的个人信息。如果我们发现我们收集了儿童的信息，我们将立即删除。
             </p>
           </section>
 
-          {/* 11. 政策变更 */}
+          {/* 12. 政策变更 */}
           <section className="bg-black/30 backdrop-blur-md rounded-lg p-6 border border-cyan-500/20">
-            <h2 className="text-2xl font-bold text-cyan-400 mb-4">11. 政策变更</h2>
+            <h2 className="text-2xl font-bold text-cyan-400 mb-4">12. 政策变更</h2>
             <p>
               我们可能不时更新本隐私政策。我们将通过在本页面上发布新政策并更新"最后更新"日期来通知您任何重大变更。您继续使用本应用即表示您接受更新后的政策。
             </p>
           </section>
 
-          {/* 12. 联系我们 */}
+          {/* 13. 联系我们 */}
           <section className="bg-black/30 backdrop-blur-md rounded-lg p-6 border border-cyan-500/20">
-            <h2 className="text-2xl font-bold text-cyan-400 mb-4">12. 联系我们</h2>
+            <h2 className="text-2xl font-bold text-cyan-400 mb-4">13. 联系我们</h2>
             <p className="mb-4">
               如果您对本隐私政策有任何问题或疑虑，或想行使您的权利，请通过以下方式与我们联系：
             </p>

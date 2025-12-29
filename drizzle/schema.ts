@@ -178,3 +178,24 @@ export const sleepGoals = mysqlTable("sleep_goals", {
 
 export type SleepGoal = typeof sleepGoals.$inferSelect;
 export type InsertSleepGoal = typeof sleepGoals.$inferInsert;
+
+
+/**
+ * Google Fit Sync Status - tracks synchronization history and status
+ */
+export const googleFitSyncStatus = mysqlTable("google_fit_sync_status", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  syncStartTime: timestamp("syncStartTime").notNull(),
+  syncEndTime: timestamp("syncEndTime"),
+  status: mysqlEnum("status", ["pending", "syncing", "success", "failed"]).default("pending").notNull(),
+  recordsCount: int("recordsCount").default(0),
+  errorMessage: text("errorMessage"),
+  errorCode: varchar("errorCode", { length: 64 }),
+  syncDuration: int("syncDuration"), // in milliseconds
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type GoogleFitSyncStatus = typeof googleFitSyncStatus.$inferSelect;
+export type InsertGoogleFitSyncStatus = typeof googleFitSyncStatus.$inferInsert;

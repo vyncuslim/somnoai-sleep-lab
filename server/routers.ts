@@ -345,15 +345,41 @@ Please provide professional advice based on the data and user question.`;
       try {
         const userId = 1; // Default guest user
         const integration = await db.getGoogleFitIntegration(userId);
+        const latestSync = await db.getLatestSyncStatus(userId);
         return {
           connected: !!integration && !!integration.accessToken,
           lastSync: integration?.lastSyncAt || null,
+          syncStatus: latestSync?.status || 'idle',
+          lastSyncTime: latestSync?.syncEndTime || null,
+          lastSyncDuration: latestSync?.syncDuration || null,
+          lastSyncError: latestSync?.errorMessage || null,
         };
       } catch (error) {
         console.error("Failed to get status:", error);
         throw new Error("Failed to get Google Fit status");
       }
     }),
+    getSyncHistory: publicProcedure
+      .input(z.object({ limit: z.number().default(10) }).optional())
+      .query(async ({ ctx, input }) => {
+        try {
+          const userId = 1; // Default guest user
+          const history = await db.getSyncHistory(userId, input?.limit || 10);
+          return history.map(item => ({
+            id: item.id,
+            status: item.status,
+            startTime: item.syncStartTime,
+            endTime: item.syncEndTime,
+            duration: item.syncDuration,
+            recordsCount: item.recordsCount,
+            errorMessage: item.errorMessage,
+            errorCode: item.errorCode,
+          }));
+        } catch (error) {
+          console.error("Failed to get sync history:", error);
+          throw new Error("Failed to get sync history");
+        }
+      }),
   }),
 
   // Sleep Goals router

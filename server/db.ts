@@ -1,6 +1,6 @@
 import { eq, and, desc, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, sleepRecords, heartRateData, googleFitIntegrations, alarms, userPreferences, notifications, aiChatHistory, sleepGoals } from "../drizzle/schema";
+import { InsertUser, users, sleepRecords, heartRateData, googleFitIntegrations, alarms, userPreferences, notifications, aiChatHistory, sleepGoals, googleFitSyncStatus, InsertGoogleFitSyncStatus } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -318,4 +318,47 @@ export async function updateSleepGoal(userId: number, data: any) {
   if (!db) return undefined;
   await db.update(sleepGoals).set(data).where(eq(sleepGoals.userId, userId));
   return data;
+}
+
+
+// Google Fit Sync Status Management
+export async function createSyncStatus(data: InsertGoogleFitSyncStatus) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.insert(googleFitSyncStatus).values(data);
+  return data;
+}
+
+export async function updateSyncStatus(syncId: number, data: Partial<InsertGoogleFitSyncStatus>) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.update(googleFitSyncStatus).set(data).where(eq(googleFitSyncStatus.id, syncId));
+  return data;
+}
+
+export async function getSyncStatus(syncId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(googleFitSyncStatus).where(
+    eq(googleFitSyncStatus.id, syncId)
+  ).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getLatestSyncStatus(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(googleFitSyncStatus).where(
+    eq(googleFitSyncStatus.userId, userId)
+  ).orderBy(desc(googleFitSyncStatus.syncStartTime)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getSyncHistory(userId: number, limit: number = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  const result = await db.select().from(googleFitSyncStatus).where(
+    eq(googleFitSyncStatus.userId, userId)
+  ).orderBy(desc(googleFitSyncStatus.syncStartTime)).limit(limit);
+  return result;
 }
