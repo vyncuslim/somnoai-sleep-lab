@@ -3,6 +3,12 @@ import { getLoginUrl } from "@/const";
 import { Heart, Moon, Brain, TrendingUp, Lock, Zap } from "lucide-react";
 
 export default function Landing() {
+  const handleStartUsing = () => {
+    // 直接设置 localStorage，然后刷新页面
+    localStorage.setItem('somnoai-guest-mode', 'true');
+    window.location.href = "/";
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Navigation */}
@@ -33,7 +39,7 @@ export default function Landing() {
           SomnoAI Digital Sleep Lab 是一个智能睡眠管理应用，帮助您追踪睡眠数据、分析睡眠质量、获取 AI 个性化建议，从而改善睡眠健康。
         </p>
         <Button
-          onClick={() => (window.location.href = getLoginUrl())}
+          onClick={handleStartUsing}
           className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 text-lg"
         >
           开始使用
